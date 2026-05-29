@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Property } from '../../nestar-api/src/libs/dto/property/property';
-import { Member } from '../../nestar-api/src/libs/dto/member/member';
-import { PropertyStatus } from '../../nestar-api/src/libs/enums/property.enum';
-import { MemberStatus, MemberType } from '../../nestar-api/src/libs/enums/member.enum';
+import { Property } from '../../vmotors-api/src/libs/dto/property/property';
+import { Member } from '../../vmotors-api/src/libs/dto/member/member';
+import { PropertyStatus } from '../../vmotors-api/src/libs/enums/property.enum';
+import { MemberStatus, MemberType } from '../../vmotors-api/src/libs/enums/member.enum';
 
 @Injectable()
 export class BatchService {
@@ -68,7 +68,6 @@ export class BatchService {
 	}
 
 	public getHello(): string {
-		return 'Hello Nestar Batch server!';
+		return 'Hello VMotors Batch server!';
 	}
 }
-

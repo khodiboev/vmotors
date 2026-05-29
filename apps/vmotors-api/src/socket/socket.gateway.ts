@@ -21,7 +21,7 @@ interface MessagePayload {
 interface InfoPayload {
 	event: string;
 	totalClients: number;
-	memberData: Member;
+	memberData?: Member;
 	action: string;
 }
 
