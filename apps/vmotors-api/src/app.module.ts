@@ -41,7 +41,7 @@ import { SocketModule } from './socket/socket.module';
 			},
 		}),
 
-		// Dasturning barcha bo'limlari (member, property va h.k.) shu yerdan ulanadi
+		// Dasturning barcha bo'limlari (member, vehicle va h.k.) shu yerdan ulanadi
 		ComponentsModule,
 
 		// Ma'lumotlar bazasi bilan bog'lanishni ta'minlaydi

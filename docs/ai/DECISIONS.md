@@ -4,32 +4,33 @@
 
 | Decision | Why it was made | Risk | Alternative |
 | --- | --- | --- | --- |
-| Perform a safe identity rename only | The requested migration was branding/project identification, not business behavior. | Some old domain words may remain where they are part of API contracts. | Full domain redesign, which would require schema, database, and client migrations. |
-| Rename app folders and Nest project IDs | `nestar-api` and `nestar-batch` were visible project identifiers. | Deploy scripts, CI, and local commands must be updated to new paths. | Keep old folders and only change greetings/package name. |
-| Rename package metadata to `vmotors` | Package name is visible project identity and appears in lockfile/tooling. | Any automation expecting `nestars` must be updated. | Use a scoped name such as `@vmotors/backend`. |
-| Preserve GraphQL query/mutation/DTO names | Keeps frontend and external API consumers compatible. | UI may still see domain terms such as `Property` until a separate API migration is planned. | Rename GraphQL types and operations, requiring frontend and possibly persisted query updates. |
-| Preserve MongoDB collection names | Avoids data migration risk and keeps existing documents readable. | Collection names remain generic marketplace terms rather than brand-specific terms. | Rename collections with a migration script and rollback plan. |
+| Use a vehicle-only catalog API | VMotors is now a Korean new-car selling platform, and the ERD defines `vehicles` as the catalog entity. | Frontend clients must update old property GraphQL calls. | Keep temporary property aliases. |
+| Do not migrate old `properties` documents | Real-estate fields do not map safely to new Hyundai/Kia inventory fields. | Old property documents remain legacy data outside the active API. | Build a one-time converter with explicit field mapping. |
+| Keep `MemberType.USER`, `MemberType.AGENT`, and `MemberType.ADMIN` | Existing auth and ownership rules depend on these roles. | `AGENT` still means vehicle dealer until a later naming migration. | Rename `AGENT` to dealer, requiring broader auth/client changes. |
+| Use `memberVehicles` for dealer catalog count | The ERD and vehicle domain replace `memberProperties`. | Existing member documents need the new field initialized or backfilled if old counts matter. | Keep `memberProperties` as a compatibility field. |
+| Use `deletedAt` for vehicle removal | `VehicleStatus` intentionally supports only `AVAILABLE`, `RESERVED`, and `SOLD`. | Admin removal is a soft delete, not a status transition. | Add a `DELETE` status, which would violate the accepted enum set. |
+| Keep shared social collections | Likes, views, comments, and notifications remain reusable cross-domain tables. | Existing old rows with `PROPERTY` groups are legacy rows. | Create dedicated vehicle-only social collections. |
 | Preserve token secret until explicit rotation | Changing `SECRET_TOKEN` can invalidate active tokens. | Secret still contains the old `nestar` string. | Rotate tokens with planned logout/session invalidation. |
-| Install `typescript-eslint` to satisfy the flat ESLint config | Existing lint config imported `typescript-eslint`, but the helper package was missing. | Package versions now include the v8 helper while legacy `@typescript-eslint/*` v6 entries remain declared. | Rewrite ESLint config to use only the existing v6 parser/plugin imports. |
-| Avoid mass lint cleanup | Lint reported hundreds of existing formatting/type-safety issues unrelated to the rename. | Lint remains failing until cleanup is scheduled. | Run `eslint --fix` and manually address all remaining lint issues in a dedicated cleanup task. |
+| Avoid mass lint cleanup | Lint debt predates this migration and `npm run lint` rewrites files. | Lint remains a separate cleanup track. | Run ESLint `--fix` and manually address all debt in this migration. |
 
 ## Compatibility Decisions
 
 | Contract | Decision | Rationale |
 | --- | --- | --- |
-| GraphQL API | Keep stable | Reduces frontend migration scope and protects existing clients. |
-| MongoDB collections | Keep stable | Avoids data copy/rename risk. |
-| Mongoose schema names | Keep stable | Prevents model registration side effects. |
-| Batch job names | Keep stable | Batch constants are operational identifiers, not brand labels. |
+| GraphQL catalog API | Breaking vehicle-only change accepted | The current backend should expose VMotors vehicle terminology, not property aliases. |
+| MongoDB catalog collection | Use `vehicles` | The ERD defines `vehicles` as the active inventory collection. |
+| MongoDB legacy property data | Do not convert | No safe field mapping was accepted. |
+| Member roles | Keep stable | Avoids auth and authorization churn. |
+| Social groups | Use `VEHICLE` | Keeps likes/views/comments reusable while making catalog references explicit. |
 | Runtime env secrets | Keep stable unless explicitly rotated | Secrets are behavior-affecting, not just visible copy. |
 
 ## Risks to Track
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |
-| CI scripts still call old app IDs | Build/deploy failure | Search CI/deploy repos for `nestar-api`, `nestar-batch`, and `nestars`. |
-| Frontend hardcodes old app labels | User-visible stale branding | Run a frontend-wide search for `Nestar`, `nestar`, and old route labels. |
-| Lint debt obscures rename regressions | Harder code review and future maintenance | Address lint cleanup separately after the rename is accepted. |
+| Frontend still calls property operations | Client breakage | Update frontend GraphQL operations to vehicle names and vehicle DTO fields. |
+| Existing member documents lack `memberVehicles` | Ranking/count displays may start at zero or undefined for old data. | Add a small admin/backfill task only if old counts must be preserved. |
+| Existing likes/views/comments with `PROPERTY` groups remain | Legacy social rows will not appear in vehicle favorites/visited/comments. | Treat as legacy unless a data migration is explicitly accepted. |
+| Existing unique indexes on likes/views may not include group | A live database may still enforce old `{ memberId, refId }` uniqueness. | Review/drop/recreate old indexes during deployment if needed. |
+| CI/deploy scripts still call old app IDs | Build/deploy failure | Search external CI/deploy repos for old Nestar app names. |
 | Secret rotation is deferred | Old brand string remains in `.env` | Create a dedicated token rotation task with rollout notes. |
-| Database URI target changed locally | Environment may point at a new database | Confirm intended database names per environment before production deployment. |
-

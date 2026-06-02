@@ -4,10 +4,10 @@ import { Model, ObjectId } from 'mongoose';
 import { View } from '../../libs/dto/view/view';
 import { ViewInput } from '../../libs/dto/view/view.input';
 import { T } from '../../libs/types/common';
-import { OrdinaryInquiry } from '../../libs/dto/property/property.input';
-import { Properties } from '../../libs/dto/property/property';
+import { OrdinaryInquiry } from '../../libs/dto/vehicle/vehicle.inquiry';
+import { Vehicles } from '../../libs/dto/vehicle/vehicles';
 import { ViewGroup } from '../../libs/enums/view.enum';
-import { lookupVisit } from '../../libs/config';
+import { lookupVisitedVehicle } from '../../libs/config';
 
 @Injectable()
 export class ViewService {
@@ -26,13 +26,14 @@ export class ViewService {
 		const search: T = {
 			memberId: memberId,
 			viewRefId: viewRefId,
+			viewGroup: input.viewGroup,
 		};
 		return await this.viewModel.findOne(search).exec();
 	}
 
-	public async getVisitedProperties(memberId: ObjectId, inquery: OrdinaryInquiry): Promise<Properties> {
+	public async getVisitedVehicles(memberId: ObjectId, inquery: OrdinaryInquiry): Promise<Vehicles> {
 		const { page, limit } = inquery;
-		const match: T = { memberId, viewGroup: ViewGroup.PROPERTY };
+		const match: T = { memberId, viewGroup: ViewGroup.VEHICLE };
 
 		const data: T = await this.viewModel
 			.aggregate([
@@ -40,20 +41,21 @@ export class ViewService {
 				{ $sort: { updatedAt: -1 } },
 				{
 					$lookup: {
-						from: 'properties',
-						localField: 'likeRefId',
+						from: 'vehicles',
+						localField: 'viewRefId',
 						foreignField: '_id',
-						as: 'visitedProperty',
+						as: 'visitedVehicle',
 					},
 				},
-				{ $unwind: '$visitedProperty' },
+				{ $unwind: '$visitedVehicle' },
+				{ $match: { 'visitedVehicle.deletedAt': { $exists: false } } },
 				{
 					$facet: {
 						list: [
 							{ $skip: (page - 1) * limit },
 							{ $limit: limit },
-							lookupVisit,
-							{ $unwind: '$visitedProperty.memberData' },
+							lookupVisitedVehicle,
+							{ $unwind: '$visitedVehicle.memberData' },
 						],
 						metaCounter: [{ $count: 'total' }],
 					},
@@ -61,8 +63,8 @@ export class ViewService {
 			])
 			.exec();
 
-		const result: Properties = { list: [], metaCounter: data[0].metaCounter };
-		result.list = data[0].list.map((ele) => ele.visitedProperty);
+		const result: Vehicles = { list: [], metaCounter: data[0].metaCounter };
+		result.list = data[0].list.map((ele) => ele.visitedVehicle);
 		return result;
 	}
 }

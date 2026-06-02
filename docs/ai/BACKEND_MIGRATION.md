@@ -1,114 +1,72 @@
 # Backend Migration: Nestar to VMotors
 
-## Original Project Summary
+## Current Backend Summary
 
-Nestar was a NestJS GraphQL monorepo for a vehicle/property-style marketplace backend. The repository contained two Nest applications:
+VMotors is now a NestJS GraphQL backend for a Korean new-car selling platform. The repository contains:
 
-| Original app | Purpose |
+| App | Purpose |
 | --- | --- |
-| `apps/nestar-api` | Main GraphQL/API application, REST root health/greeting controller, WebSocket gateway, MongoDB-backed domain modules. |
-| `apps/nestar-batch` | Scheduled batch application for maintenance and ranking jobs. |
+| `apps/vmotors-api` | Main GraphQL/API application. |
+| `apps/vmotors-batch` | Scheduled batch/ranking application. |
 
-The backend domain surface included members, authentication, properties, board articles, comments, follows, likes, views, notices, notifications, sockets, and batch ranking/rollback tasks.
+The active catalog domain is `Vehicle`, backed by the MongoDB `vehicles` collection. VMotors supports only new Hyundai and Kia vehicles.
 
-## New Project Summary
+## Completed Migration Stages
 
-The current backend identity is VMotors. The application layout now uses:
-
-| Current app | Purpose |
+| Stage | Status |
 | --- | --- |
-| `apps/vmotors-api` | Main VMotors API application. |
-| `apps/vmotors-batch` | VMotors batch/scheduler application. |
+| Visible app/package rename from Nestar to VMotors | Completed. |
+| App folder/project key rename to `vmotors-api` and `vmotors-batch` | Completed. |
+| Active catalog migration from property listings to vehicles | Completed. |
+| Social module repointing for likes, views, comments, favorites, and visited vehicles | Completed. |
+| Batch ranking migration from properties to vehicles | Completed. |
+| MongoDB conversion from old `properties` documents | Not performed by decision. |
 
-Package metadata now uses the package name `vmotors`, and Nest monorepo project IDs are `vmotors-api` and `vmotors-batch`.
+## Active Domain Shape
 
-## Backend Migration Goal
+The active catalog API uses vehicle terminology only:
 
-The migration completed in this session was a safe visible-identity rename. It changed project/app identification from Nestar to VMotors while preserving business logic and compatibility contracts.
-
-Primary constraints:
-
-| Constraint | Status |
+| Area | Current contract |
 | --- | --- |
-| Do not change domain logic | Preserved. |
-| Do not change GraphQL API shape | Preserved. |
-| Do not rename MongoDB collections | Preserved. |
-| Do not rewrite lint/format debt as part of rename | Preserved. |
-| Update visible app/package/project names | Completed. |
+| Catalog module | `VehicleModule`, `VehicleResolver`, `VehicleService` |
+| Catalog schema | `Vehicle.model.ts` with collection `vehicles` |
+| Catalog DTOs | `libs/dto/vehicle/*` |
+| Catalog GraphQL operations | `createVehicle`, `getVehicle`, `updateVehicle`, `getVehicles`, `getDealerVehicles`, `likeTargetVehicle`, admin vehicle operations |
+| Seller/dealer ownership | `memberId` owned by `MemberType.AGENT` |
+| Member catalog counter | `memberVehicles` |
+| Batch vehicle ranking | `BATCH_TOP_VEHICLES` |
 
-## Naming Changes
+Vehicle fields include brand, model, trim, year, fuel, transmission, color, price, location, stock quantity, images, description, status, stats, seller/dealer, `soldAt`, and `deletedAt`.
 
-| Area | Before | After |
-| --- | --- | --- |
-| API app folder | `apps/nestar-api` | `apps/vmotors-api` |
-| Batch app folder | `apps/nestar-batch` | `apps/vmotors-batch` |
-| Nest API project key | `nestar-api` | `vmotors-api` |
-| Nest batch project key | `nestar-batch` | `vmotors-batch` |
-| Package name | `nestars` | `vmotors` |
-| API dist path | `dist/apps/nestar-api/main` | `dist/apps/vmotors-api/main` |
-| Batch dist path | `dist/apps/nestar-batch/main` | `dist/apps/vmotors-batch/main` |
-| API greeting | `Hello Nestar API server!` | `Hello VMotors API server!` |
-| Batch greeting | `Hello Nestar Batch server!` | `Hello VMotors Batch server!` |
+## Domain Rules
 
-## Module Changes
-
-No domain modules were added, removed, or behaviorally redesigned. Module paths changed because the app folders changed.
-
-| Module group | Current location | Compatibility note |
-| --- | --- | --- |
-| Root API module | `apps/vmotors-api/src/app.module.ts` | Same Nest module role as before. |
-| Components module | `apps/vmotors-api/src/components/components.module.ts` | Aggregates existing domain modules. |
-| Auth/member/property/article/comment/follow/like/view modules | `apps/vmotors-api/src/components/*` | Domain behavior preserved. |
-| Socket module/gateway | `apps/vmotors-api/src/socket/*` | Runtime role preserved. |
-| API database module | `apps/vmotors-api/src/database/database.module.ts` | Connection selection behavior preserved. |
-| Batch module/controller/service | `apps/vmotors-batch/src/*` | Scheduled batch behavior preserved. |
-| Batch database module | `apps/vmotors-batch/src/database/database.module.ts` | Connection selection behavior preserved. |
-
-Internal imports that referenced `apps/nestar-api` or `../../nestar-api` were updated to `apps/vmotors-api` or `../../vmotors-api`.
-
-## GraphQL Changes
-
-No GraphQL schema or operation contract rename was intentionally performed.
-
-| GraphQL area | Migration status |
+| Rule | Current status |
 | --- | --- |
-| Resolver classes and module responsibilities | Preserved. |
-| Query/mutation names | Preserved. |
-| DTO field names | Preserved. |
-| Enum values | Preserved. |
-| Authentication decorators/guards | Preserved except import paths. |
-| Client compatibility | Existing clients should not need GraphQL operation changes for this backend rename. |
-
-The current backend still exposes the same domain vocabulary, including `Member`, `Property`, `BoardArticle`, `Comment`, `Follow`, `Like`, and `View` DTOs.
-
-## MongoDB Collection/Schema Changes
-
-MongoDB collection names were intentionally not renamed.
-
-| Schema file | Collection |
-| --- | --- |
-| `BoardArticle.model.ts` | `boardArticles` |
-| `Comment.model.ts` | `comments` |
-| `Like.model.ts` | `likes` |
-| `Member.model.ts` | `members` |
-| `Notice.model.ts` | `notices` |
-| `Notification.model.ts` | `notifications` |
-| `Property.model.ts` | `properties` |
-| `View.model.ts` | `views` |
-
-Mongoose feature registration names such as `Property`, `Member`, `Follow`, `Like`, and `View` were preserved.
-
-The local `.env` currently points `MONGO_DEV` and `MONGO_PROD` at VMotors database URI paths. `SECRET_TOKEN` still contains `nestar_secret_token`, which is a compatibility-sensitive value and should not be changed without a token rotation plan.
+| Keep `MemberType.USER`, `MemberType.AGENT`, `MemberType.ADMIN` | Preserved. |
+| Only Hyundai and Kia brands | Enforced by `VehicleBrand`. |
+| Only new car inventory | Active API has no used/rental/auction fields. |
+| Product type | `ProductType.CAR` only. |
+| Vehicle statuses | `AVAILABLE`, `RESERVED`, `SOLD`. |
+| Removal behavior | Soft delete via `deletedAt`; there is no `DELETE` vehicle status. |
+| Old property data | Not converted; old `properties` documents are legacy data. |
 
 ## Compatibility Notes
 
 | Compatibility area | Status | Notes |
 | --- | --- | --- |
-| REST root route | Compatible | Only greeting text changed. |
-| GraphQL schema | Compatible | No intentional schema rename. |
-| MongoDB collections | Compatible | Collection names unchanged. |
-| Existing documents | Compatible | No migrations were introduced. |
-| JWT/token signing | Compatible with existing secret | Secret value remains old unless rotated later. |
-| Build output | Renamed | Deployment scripts must use `dist/apps/vmotors-api` and `dist/apps/vmotors-batch`. |
-| Frontend clients | Mostly compatible | API endpoint/project labels may change, but GraphQL operations should continue to work. |
+| GraphQL catalog API | Breaking change accepted | Old property catalog operations were removed from active source. |
+| MongoDB collections | New active collection | `vehicles` is active; legacy `properties` data was not migrated. |
+| Member types/auth | Compatible | Member role names and auth behavior remain unchanged. |
+| Social tables | Compatible table names | `likes`, `views`, and `comments` remain shared tables but use `VEHICLE` groups for catalog items. |
+| Batch jobs | Renamed catalog job | Vehicle ranking uses `BATCH_TOP_VEHICLES`. |
+| JWT/token signing | Compatible with existing secret | `SECRET_TOKEN` remains unchanged unless a later rotation is planned. |
 
+## Validation Status
+
+| Validation | Status |
+| --- | --- |
+| API typecheck | Passed: `npx tsc -p apps/vmotors-api/tsconfig.app.json --noEmit` |
+| Batch typecheck | Passed: `npx tsc -p apps/vmotors-batch/tsconfig.app.json --noEmit` |
+| Full Nest build | Passed: `npm run build` |
+| Focused vehicle service test | Passed: `npm test -- vehicle.service.spec.ts` |
+| Active source domain scan | Passed for property/real-estate/petshop/used-car terms under `apps/*/src` |

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MemberModule } from './member/member.module';
-import { PropertyModule } from './property/property.module';
+import { VehicleModule } from './vehicle/vehicle.module';
 import { AuthModule } from './auth/auth.module';
 import { CommentModule } from './comment/comment.module';
 import { LikeModule } from './like/like.module';
@@ -17,7 +17,7 @@ import { BoardArticleModule } from './board-article/board-article.module';
  *
  * Masalan:
  *   MemberModule  → foydalanuvchilar bilan bog'liq hamma narsa
- *   PropertyModule → e'lonlar (uy, kvartira) bilan bog'liq hamma narsa
+ *   VehicleModule → yangi Hyundai/Kia avtomobillari bilan bog'liq hamma narsa
  *   AuthModule    → kirish/chiqish (login/logout) bilan bog'liq hamma narsa
  *
  * NIMA UCHUN AYNAN SHU FAYL?
@@ -32,7 +32,7 @@ import { BoardArticleModule } from './board-article/board-article.module';
 	imports: [
 		MemberModule, // Foydalanuvchilar: ro'yxatdan o'tish, profil
 		AuthModule, // Kirish va xavfsizlik: login, token
-		PropertyModule, // Ko'chmas mulk e'lonlari
+		VehicleModule, // Yangi avtomobillar katalogi
 		BoardArticleModule, // Forum / maqolalar
 		CommentModule, // Izohlar
 		LikeModule, // Yoqtirishlar (like)

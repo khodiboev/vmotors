@@ -1,5 +1,12 @@
 import { registerEnumType } from '@nestjs/graphql';
 
+export enum ProductType {
+	CAR = 'CAR',
+}
+registerEnumType(ProductType, {
+	name: 'ProductType',
+});
+
 export enum VehicleBrand {
 	HYUNDAI = 'HYUNDAI',
 	KIA = 'KIA',
