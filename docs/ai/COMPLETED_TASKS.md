@@ -38,3 +38,29 @@ This session completed the backend catalog migration from property listings to V
 | Rename `MemberType.AGENT` | Not performed; dealer ownership still uses `AGENT`. |
 | JWT/token secret rotation | Not performed. |
 | Mass lint cleanup | Not performed. |
+
+## Frontend Migration Progress
+
+| Area | Completed work |
+| --- | --- |
+| Contract layer | Added frontend vehicle enums/types and updated Apollo catalog operations to the vehicle-only backend API. |
+| Public catalog | Added /vehicle and /vehicle/detail pages; old /property routes now redirect to vehicle routes. |
+| Vehicle UI | Converted list/detail cards, search filters, favorites, visited, dealer inventory, and member inventory views to vehicle fields. |
+| Dealer workflow | Replaced add/edit property form with vehicle inventory form using brand, model, trim, year, fuel, transmission, color, price, location, stock, images, and description. |
+| Admin inventory | Added /_admin/vehicles with vehicle status/brand/location filtering plus admin update/remove vehicle operations; old admin properties route redirects. |
+| Branding | Updated visible Nestar/property wording to VMotors/vehicle/dealer in core navigation, metadata, footer, locale labels, and account copy. |
+
+## Frontend Validation Status
+
+| Validation | Status |
+| --- | --- |
+| Typecheck | Passed: `yarn -s tsc --noEmit --incremental false` |
+| Production build | Passed: `yarn build` |
+| Lint | Blocked: `yarn lint` opens Next.js ESLint setup prompt because no ESLint config exists. No lint config was generated during migration. |
+
+## Frontend Known Follow-ups
+
+| Follow-up | Notes |
+| --- | --- |
+| Visual assets | Some reused CSS class names and real-estate image assets remain as compatibility/polish debt after the functional vehicle migration. |
+| Route naming | Dealer routes still use /agent internally because backend/member role compatibility keeps AGENT; visible copy now says dealer. |
