@@ -4,6 +4,11 @@ import type { ObjectId } from 'mongoose';
 import { BoardArticleCategory, BoardArticleStatus } from '../../enums/board-article.enum';
 import { Direction } from '../../enums/common.enum';
 import { availableBoardArticleSorts } from '../../config';
+import {
+	BOARD_ARTICLE_TITLE_MAX_LENGTH,
+	BOARD_ARTICLE_TITLE_MIN_LENGTH,
+} from '../../helpers/board-article.helper';
+import { IsValidBoardArticleContent } from '../../validators/board-article-content.validator';
 
 @InputType()
 export class BoardArticleInput {
@@ -12,12 +17,12 @@ export class BoardArticleInput {
 	articleCategory!: BoardArticleCategory;
 
 	@IsNotEmpty()
-	@Length(3, 50)
+	@Length(BOARD_ARTICLE_TITLE_MIN_LENGTH, BOARD_ARTICLE_TITLE_MAX_LENGTH)
 	@Field(() => String)
 	articleTitle!: string;
 
 	@IsNotEmpty()
-	@Length(3, 250)
+	@IsValidBoardArticleContent()
 	@Field(() => String)
 	articleContent!: string;
 

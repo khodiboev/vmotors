@@ -40,8 +40,9 @@ export class BoardArticleService {
 
 			return result;
 		} catch (err) {
-			console.log('Error, Service.model:', Message.CREATE_FAILED);
-			throw new BadRequestException(Message.CREATE_FAILED);
+			const message = err instanceof Error && err.message ? err.message : Message.CREATE_FAILED;
+			console.log('Error, Service.model:', message);
+			throw new BadRequestException(message);
 		}
 	}
 
@@ -77,6 +78,7 @@ export class BoardArticleService {
 		const result = await this.boardArticleModel
 			.findOneAndUpdate({ _id: _id, memberId: memberId, articleStatus: BoardArticleStatus.ACTIVE }, input, {
 				new: true,
+				runValidators: true,
 			})
 			.exec();
 
@@ -184,6 +186,7 @@ export class BoardArticleService {
 		const result = await this.boardArticleModel
 			.findOneAndUpdate({ _id: _id, articleStatus: BoardArticleStatus.ACTIVE }, input, {
 				new: true,
+				runValidators: true,
 			})
 			.exec();
 		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);

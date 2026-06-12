@@ -4,11 +4,12 @@
 
 | Priority | Workstream | Task | Outcome |
 | --- | --- | --- | --- |
-| 1 | Frontend migration | Update frontend GraphQL operations and field names from property catalog calls to vehicle catalog calls. | Clients work with the vehicle-only backend API. |
-| 2 | Data policy | Decide whether old member counts or old social rows need backfills into `memberVehicles` and `VEHICLE` groups. | Clear legacy data handling policy. |
-| 3 | Testing | Run backend e2e tests against a safe VMotors database/test environment. | Runtime behavior confirmed beyond typecheck/build/unit tests. |
-| 4 | Backend cleanup | Audit CI/CD, process manager configs, Dockerfiles, and hosting settings for old Nestar or property catalog references. | Deployment path and runtime compatibility confirmed. |
-| 5 | Environment policy | Decide whether `.env` database URI names and `SECRET_TOKEN` should be migrated or documented as compatibility exceptions. | Clear environment/secret policy. |
+| 1 | Homepage follow-through | Decide whether `PopularProperties` should be restored intentionally or removed as an unused homepage section/component. | The homepage section inventory matches the intended VMotors landing-page strategy with no dead-section drift. |
+| 2 | Frontend accessibility | Add reduced-motion handling to the hero/search shell and audit clickable non-link card surfaces for keyboard/focus accessibility. | The premium homepage remains accessible without losing the current design direction. |
+| 3 | Frontend QA | Run desktop/mobile smoke tests against the live VMotors frontend and backend for homepage, `/vehicle`, dealer, and community entry flows. | Homepage polish is validated beyond typecheck and code inspection. |
+| 4 | Backend/data policy | Decide whether old member counts or old social rows need backfills into `memberVehicles` and `VEHICLE` groups. | Clear legacy data handling policy. |
+| 5 | Backend cleanup | Audit CI/CD, process manager configs, Dockerfiles, and hosting settings for old Nestar or property catalog references. | Deployment path and runtime compatibility confirmed. |
+| 6 | Environment policy | Decide whether `.env` database URI names and `SECRET_TOKEN` should be migrated or documented as compatibility exceptions. | Clear environment/secret policy. |
 
 ## Backend Cleanup
 
@@ -26,16 +27,28 @@
 
 | Task | Priority | Notes |
 | --- | --- | --- |
-| Replace property GraphQL operation names with vehicle operation names. | High | Backend no longer exposes active property catalog operations. |
-| Replace property field access with vehicle fields. | High | Use brand, model, trim, year, fuel, transmission, color, price, location, stock quantity, images, description, and status. |
-| Replace member catalog counter usage with `memberVehicles`. | High | `memberProperties` is no longer active backend terminology. |
-| Update favorite/visited/comment UI terminology to vehicles. | Medium | Shared operation names `getFavorites` and `getVisited` remain, but return `Vehicles`. |
-| Confirm only Hyundai/Kia new-car inventory is exposed in UI filters. | Medium | Match backend enum constraints. |
+| Treat `FRONTEND_MIGRATION.md` as historical and refresh it when a new planning pass is needed. | Medium | The current file still reflects an early planning phase before the live frontend repo and homepage redesign/polish work were completed. |
+| Decide the final status of `PopularProperties`. | High | The component still exists and queries data, but `pages/index.tsx` no longer renders it. Either remove the dead section cleanly or reintroduce it intentionally elsewhere. |
+| Add homepage smoke coverage. | High | Cover hero search, `New Arrivals`, `Buyer Favorites`, `Trusted Dealers`, video CTA, community links, and mobile/desktop responsive behavior. |
+| Accessibility audit for homepage interactions. | High | Prioritize brand cards, CTA buttons, autoplay video fallback/poster behavior, and reduced-motion parity between hero/search and section-level motion. |
+| Visual cleanup pass for leftover compatibility debt. | Medium | Audit reused real-estate asset fallbacks, old route/class naming leftovers, and any UI copy that still reads like a migration artifact instead of a final VMotors surface. |
+| Consolidate repeated homepage motion/polish patterns if more sections adopt them. | Medium | `TrendProperties` and `TopProperties` currently own their own motion wrappers/variants; future work may justify extracting shared helpers after behavior stabilizes. |
+
+## Homepage Implementation Notes
+
+| Note | Why it matters |
+| --- | --- |
+| Current active home route order is `BrandSection` → `TrendProperties` → `TopProperties` → `TopAgents` → `Advertisement` → `TrustSection` → `CommunityBoards` → `CTASection`. | Older docs still mention a different section order that included `PopularProperties`. |
+| `TrendProperties` and `TopProperties` already use Framer Motion plus reduced-motion handling. | Additional homepage animation work should stay consistent with the current one-time viewport reveal pattern and avoid redundant animation systems. |
+| `TopAgents` already has a dedicated premium card treatment. | Future dealer-section work should preserve equal-height cards, fallback support copy, and the current desktop 4-up Swiper behavior. |
+| Shared homepage vehicle styling is centralized in `HomepageVehicleCard.tsx` and homepage SCSS. | Section-specific polish should stay scoped to avoid unintentionally changing other homepage or listing surfaces. |
 
 ## Validation Commands
 
 | Task | Command |
 | --- | --- |
+| Frontend typecheck | `yarn -s tsc --noEmit --incremental false` |
+| Frontend production build | `yarn build` |
 | API typecheck | `npx tsc -p apps/vmotors-api/tsconfig.app.json --noEmit` |
 | Batch typecheck | `npx tsc -p apps/vmotors-batch/tsconfig.app.json --noEmit` |
 | Full build | `npm run build` |
