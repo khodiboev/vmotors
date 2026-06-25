@@ -1,9 +1,9 @@
 ---
 name: vehicle-logic
-description: Review VMotors vehicle API consistency across GraphQL operations, DTOs, schemas, enums, filters, and remaining legacy terminology.
+description: Review Santa vehicle API consistency across GraphQL operations, DTOs, schemas, enums, filters, and remaining legacy terminology.
 ---
 
-# VMotors Vehicle API Review
+# Santa Vehicle API Review
 
 Use this skill for review-only passes or pre-edit analysis of the vehicle API.
 

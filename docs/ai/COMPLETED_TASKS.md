@@ -2,7 +2,7 @@
 
 ## Session Summary
 
-This session completed the backend catalog migration from property listings to VMotors vehicles. The active GraphQL API now uses vehicle operations, the active MongoDB catalog collection is `vehicles`, and social/batch/member counters were repointed to vehicle terminology.
+This session completed the backend catalog migration from property listings to Santa vehicles. The active GraphQL API now uses vehicle operations, the active MongoDB catalog collection is `vehicles`, and social/batch/member counters were repointed to vehicle terminology.
 
 ## Completed Refactors
 
@@ -48,7 +48,7 @@ This session completed the backend catalog migration from property listings to V
 | Vehicle UI | Converted list/detail cards, search filters, favorites, visited, dealer inventory, and member inventory views to vehicle fields. |
 | Dealer workflow | Replaced add/edit property form with vehicle inventory form using brand, model, trim, year, fuel, transmission, color, price, location, stock, images, and description. |
 | Admin inventory | Added /_admin/vehicles with vehicle status/brand/location filtering plus admin update/remove vehicle operations; old admin properties route redirects. |
-| Branding | Updated visible Nestar/property wording to VMotors/vehicle/dealer in core navigation, metadata, footer, locale labels, and account copy. |
+| Branding | Updated visible Nestar/property wording to Santa/vehicle/dealer in core navigation, metadata, footer, locale labels, and account copy. |
 
 ## Frontend Validation Status
 
@@ -70,7 +70,7 @@ This session completed the backend catalog migration from property listings to V
 ## Homepage UI Redesign (2026-06-09)
 
 ### Summary
-Significant UI redesign of the VMotors homepage. All existing GraphQL/Apollo logic, queries, mutations, routing, and data structures were preserved. Only the UI layer was changed.
+Significant UI redesign of the Santa homepage. All existing GraphQL/Apollo logic, queries, mutations, routing, and data structures were preserved. Only the UI layer was changed.
 
 ### New Components Created
 
@@ -88,8 +88,8 @@ Significant UI redesign of the VMotors homepage. All existing GraphQL/Apollo log
 | `pages/index.tsx` | Added BrandSection (first), replaced Events with TrustSection, added CTASection before CommunityBoards |
 | `libs/components/homepage/TrendProperties.tsx` | Updated copy: "Trending Now" / "Most liked vehicles this week" |
 | `libs/components/homepage/PopularProperties.tsx` | Updated copy: "Most Popular" / "Top viewed vehicles right now"; fixed broken `/property` link → `/vehicle` |
-| `libs/components/homepage/TopProperties.tsx` | Updated copy: "Top Rated" / "Highest ranked listings on VMotors" |
-| `libs/components/homepage/TopAgents.tsx` | Updated copy: "Our Top Dealers" / "Certified VMotors dealer partners" / "Browse All Dealers" |
+| `libs/components/homepage/TopProperties.tsx` | Updated copy: "Top Rated" / "Highest ranked listings on Santa" |
+| `libs/components/homepage/TopAgents.tsx` | Updated copy: "Our Top Dealers" / "Certified Santa dealer partners" / "Browse All Dealers" |
 | `scss/pc/main.scss` | Added `.hero-content` styles (hero-pill, hero-headline, hero-sub) positioned as absolute overlay on the header |
 | `scss/pc/homepage/homepage.scss` | Added styles for BrandSection, TrustSection, CTASection; improved vehicle card hover effects; upgraded section heading typography |
 
@@ -101,7 +101,7 @@ Significant UI redesign of the VMotors homepage. All existing GraphQL/Apollo log
 5. Advertisement — video (unchanged)
 6. TopProperties — "Top Rated"
 7. TopAgents — "Our Top Dealers"
-8. TrustSection — Why Choose VMotors (replaces Events)
+8. TrustSection — Why Choose Santa (replaces Events)
 9. CTASection — CTA strip
 10. CommunityBoards — (desktop only)
 
@@ -117,23 +117,23 @@ Significant UI redesign of the VMotors homepage. All existing GraphQL/Apollo log
 ## Homepage Polish, Stabilization, and Audit Update (2026-06-11)
 
 ### Summary
-This follow-up session audited the current VMotors homepage implementation against the migration docs and confirmed that the shipped homepage has moved beyond the original 2026-06-09 redesign notes. The live homepage keeps all GraphQL/Apollo logic intact while adding stronger VMotors vehicle/dealer copy, premium hero and filter polish, normalized dealer cards, refined vehicle-card presentation, section-level entrance motion, and cleaner mobile/desktop parity.
+This follow-up session audited the current Santa homepage implementation against the migration docs and confirmed that the shipped homepage has moved beyond the original 2026-06-09 redesign notes. The live homepage keeps all GraphQL/Apollo logic intact while adding stronger Santa vehicle/dealer copy, premium hero and filter polish, normalized dealer cards, refined vehicle-card presentation, section-level entrance motion, and cleaner mobile/desktop parity.
 
 ### Completed Work
 
 | Area | Completed work |
 | --- | --- |
 | Homepage composition | `pages/index.tsx` now renders `BrandSection` → `TrendProperties` → `TopProperties` → `TopAgents` → `Advertisement` → `TrustSection` → `CommunityBoards` → `CTASection` on both desktop and mobile. `PopularProperties` remains in the repo but is no longer mounted on the home route. |
-| Hero section | `LayoutHome.tsx` now uses premium VMotors hero copy, trust chips, and a desktop side panel to frame Hyundai/Kia discovery as a modern automotive marketplace rather than a generic property portal. |
+| Hero section | `LayoutHome.tsx` now uses premium Santa hero copy, trust chips, and a desktop side panel to frame Hyundai/Kia discovery as a modern automotive marketplace rather than a generic property portal. |
 | Search/filter UX | `HeaderFilter.tsx` now presents brand, fuel, and transmission as the primary homepage search controls, routes directly to `/vehicle?input=...`, and uses Framer Motion for premium entrance/stagger polish without changing query behavior. |
-| New Arrivals section | `TrendProperties.tsx` now ships as `New Arrivals` with updated VMotors copy, preserved vehicle query logic, and once-on-reveal staggered entrance animation via Framer Motion plus reduced-motion handling. |
+| New Arrivals section | `TrendProperties.tsx` now ships as `New Arrivals` with updated Santa copy, preserved vehicle query logic, and once-on-reveal staggered entrance animation via Framer Motion plus reduced-motion handling. |
 | Buyer Favorites section | `TopProperties.tsx` now ships as `Buyer Favorites` with updated shortlist-focused copy, preserved vehicle query/like logic, and the same once-on-reveal motion treatment and reduced-motion support used in `TrendProperties`. |
 | Vehicle card system | `HomepageVehicleCard.tsx` now provides the shared homepage vehicle presentation: top-rank and brand badges, price chip, status pill, location row, spec chips, inventory/dealer metadata, and a cleaner engagement strip for likes/views. |
 | Trusted Dealers section | `TopAgents.tsx` and `TopAgentCard.tsx` now ship a centered `Trusted Dealers` section with equal-height premium cards, normalized support-line fallback copy, image cover handling, 2-column stats panels, bottom-aligned CTA links, and centered glyph-based carousel controls that preserve the existing Swiper disabled state. |
 | Advertisement/video section | `Advertisement.tsx` now uses premium automotive overlay copy and a direct CTA over the existing homepage video rather than leaving the section as a generic unframed media block. |
-| Built for confident buyers | `TrustSection.tsx` now replaces the old irrelevant events/tourism-style content with four VMotors trust pillars focused on verified inventory, Hyundai/Kia specialization, smarter search, and trusted dealer support. |
-| CTA conversion block | `CTASection.tsx` now closes the homepage with a branded VMotors CTA encouraging users to browse vehicles or find dealers without changing route behavior. |
-| Community polish | `CommunityBoards.tsx` and `HomepageCommunityCard.tsx` now present news and owner-story content in homepage-specific VMotors styling so editorial/community content matches the upgraded automotive landing-page system. |
+| Built for confident buyers | `TrustSection.tsx` now replaces the old irrelevant events/tourism-style content with four Santa trust pillars focused on verified inventory, Hyundai/Kia specialization, smarter search, and trusted dealer support. |
+| CTA conversion block | `CTASection.tsx` now closes the homepage with a branded Santa CTA encouraging users to browse vehicles or find dealers without changing route behavior. |
+| Community polish | `CommunityBoards.tsx` and `HomepageCommunityCard.tsx` now present news and owner-story content in homepage-specific Santa styling so editorial/community content matches the upgraded automotive landing-page system. |
 | Styling and responsiveness | `scss/pc/homepage/homepage.scss`, `scss/pc/main.scss`, and `scss/mobile/main.scss` now define a shared navy/blue premium-tech homepage token set, premium hero/search presentation, updated responsive section spacing, vehicle/dealer card polish, and matching mobile treatments. |
 | Motion and accessibility | Homepage vehicle sections now respect `prefers-reduced-motion: reduce` for section reveal motion, dealer carousel controls include explicit `aria-label`s, and section/card wrappers were structured to avoid horizontal overflow or broken equal-height card layouts. |
 

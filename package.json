@@ -1,7 +1,7 @@
 {
-	"name": "vmotors",
+	"name": "santa",
 	"version": "0.0.1",
-	"description": "",
+	"description": "Santa backend for the Hyundai and Kia new-car marketplace",
 	"author": "",
 	"private": true,
 	"license": "ITC",

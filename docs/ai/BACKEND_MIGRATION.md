@@ -1,21 +1,21 @@
-# Backend Migration: Nestar to VMotors
+# Backend Migration: Nestar to Santa
 
 ## Current Backend Summary
 
-VMotors is now a NestJS GraphQL backend for a Korean new-car selling platform. The repository contains:
+Santa is now a NestJS GraphQL backend for a Korean new-car selling platform. The repository contains:
 
 | App | Purpose |
 | --- | --- |
 | `apps/vmotors-api` | Main GraphQL/API application. |
 | `apps/vmotors-batch` | Scheduled batch/ranking application. |
 
-The active catalog domain is `Vehicle`, backed by the MongoDB `vehicles` collection. VMotors supports only new Hyundai and Kia vehicles.
+The active catalog domain is `Vehicle`, backed by the MongoDB `vehicles` collection. Santa supports only new Hyundai and Kia vehicles.
 
 ## Completed Migration Stages
 
 | Stage | Status |
 | --- | --- |
-| Visible app/package rename from Nestar to VMotors | Completed. |
+| Visible app/package rename from Nestar to Santa | Completed. |
 | App folder/project key rename to `vmotors-api` and `vmotors-batch` | Completed. |
 | Active catalog migration from property listings to vehicles | Completed. |
 | Social module repointing for likes, views, comments, favorites, and visited vehicles | Completed. |

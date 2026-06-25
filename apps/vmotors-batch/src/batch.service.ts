@@ -70,6 +70,6 @@ export class BatchService {
 	}
 
 	public getHello(): string {
-		return 'Hello VMotors Batch server!';
+		return 'Hello Santa Batch server!';
 	}
 }

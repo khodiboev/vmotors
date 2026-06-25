@@ -4,9 +4,9 @@
 
 | Priority | Workstream | Task | Outcome |
 | --- | --- | --- | --- |
-| 1 | Homepage follow-through | Decide whether `PopularProperties` should be restored intentionally or removed as an unused homepage section/component. | The homepage section inventory matches the intended VMotors landing-page strategy with no dead-section drift. |
+| 1 | Homepage follow-through | Decide whether `PopularProperties` should be restored intentionally or removed as an unused homepage section/component. | The homepage section inventory matches the intended Santa landing-page strategy with no dead-section drift. |
 | 2 | Frontend accessibility | Add reduced-motion handling to the hero/search shell and audit clickable non-link card surfaces for keyboard/focus accessibility. | The premium homepage remains accessible without losing the current design direction. |
-| 3 | Frontend QA | Run desktop/mobile smoke tests against the live VMotors frontend and backend for homepage, `/vehicle`, dealer, and community entry flows. | Homepage polish is validated beyond typecheck and code inspection. |
+| 3 | Frontend QA | Run desktop/mobile smoke tests against the live Santa frontend and backend for homepage, `/vehicle`, dealer, and community entry flows. | Homepage polish is validated beyond typecheck and code inspection. |
 | 4 | Backend/data policy | Decide whether old member counts or old social rows need backfills into `memberVehicles` and `VEHICLE` groups. | Clear legacy data handling policy. |
 | 5 | Backend cleanup | Audit CI/CD, process manager configs, Dockerfiles, and hosting settings for old Nestar or property catalog references. | Deployment path and runtime compatibility confirmed. |
 | 6 | Environment policy | Decide whether `.env` database URI names and `SECRET_TOKEN` should be migrated or documented as compatibility exceptions. | Clear environment/secret policy. |
@@ -31,7 +31,7 @@
 | Decide the final status of `PopularProperties`. | High | The component still exists and queries data, but `pages/index.tsx` no longer renders it. Either remove the dead section cleanly or reintroduce it intentionally elsewhere. |
 | Add homepage smoke coverage. | High | Cover hero search, `New Arrivals`, `Buyer Favorites`, `Trusted Dealers`, video CTA, community links, and mobile/desktop responsive behavior. |
 | Accessibility audit for homepage interactions. | High | Prioritize brand cards, CTA buttons, autoplay video fallback/poster behavior, and reduced-motion parity between hero/search and section-level motion. |
-| Visual cleanup pass for leftover compatibility debt. | Medium | Audit reused real-estate asset fallbacks, old route/class naming leftovers, and any UI copy that still reads like a migration artifact instead of a final VMotors surface. |
+| Visual cleanup pass for leftover compatibility debt. | Medium | Audit reused real-estate asset fallbacks, old route/class naming leftovers, and any UI copy that still reads like a migration artifact instead of a final Santa surface. |
 | Consolidate repeated homepage motion/polish patterns if more sections adopt them. | Medium | `TrendProperties` and `TopProperties` currently own their own motion wrappers/variants; future work may justify extracting shared helpers after behavior stabilizes. |
 
 ## Homepage Implementation Notes
