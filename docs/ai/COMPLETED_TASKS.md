@@ -187,3 +187,54 @@ This follow-up session audited the current Santa homepage implementation against
 | --- | --- |
 | Frontend typecheck | Baseline unchanged: `yarn -s tsc --noEmit --incremental false` still fails only in `skills/shadcn-ui/examples/*` and did not expose new homepage-specific errors during this audit. |
 | Homepage route composition audit | Passed: `pages/index.tsx` confirms the current live homepage order and verifies that `PopularProperties` is no longer mounted. |
+
+---
+
+## Community Page Auth Guard + Article Detail Redesign (2026-07-02)
+
+### Summary
+Fixed the "Write Article" guest redirect bug and redesigned the Community Article Detail page to match the VMotors premium design language.
+
+### Write Article Auth Guard
+
+| Change | Detail |
+| --- | --- |
+| `pages/community/index.tsx` | Added `useReactiveVar(userVar)` and `writeArticleHandler`. Both `<Link>` write-article buttons replaced with `<button onClick={writeArticleHandler}>`. Guests see `sweetLoginConfirmAlert` and stay on the page; confirmed guests go to `/account/join`; logged-in users go to `/mypage?category=writeArticle`. |
+| `pages/community/detail.tsx` | Write button onClick updated with the same auth-guarded pattern. `sweetLoginConfirmAlert` added to imports. |
+
+### Article Detail Page Redesign
+
+| Change | Detail |
+| --- | --- |
+| `libs/components/layout/LayoutBasic.tsx` | Fixed banner subtitle for `/community/detail`: `'Home / Vehicles'` → `'Community / Article Detail'`. |
+| `pages/community/detail.tsx` | Removed old sidebar (`.left-config` with SANTA logo image + vertical tabs). Added horizontal `.article-category-nav` strip with `Tabs` (reusing existing `tabChangeHandler`) and an auth-guarded "Write article" button. Restructured content into three premium cards: `.article-header-card` (gradient hero with category badge, title, author row, stats chips), `.article-body-card` (conditional featured image, ToastViewerComponent, like button), `.article-comments-card` (comment input, comment list, pagination). Moved `<Backdrop>` edit modal outside the comment loop. Removed unused MUI imports (`Stack`, `Typography`) and icon (`ChatIcon`). Removed unused state (`anchorEl`, `open`, `id`) and unused query destructuring variables. |
+| `scss/pc/community/detail.scss` | Complete rewrite using VMotors CSS custom property token set (`--cd-primary`, `--cd-secondary`, `--cd-soft`, `--cd-surface`, `--cd-border`, `--cd-shadow`, `--cd-muted`, `--cd-text`). Premium gradient article header card matching vehicle/agent detail page style, clean article body card, comment cards with avatar/name/date/actions, styled edit modal with focus ring and contained-button CTA. |
+
+### Validation
+
+| Validation | Status |
+| --- | --- |
+| TypeScript typecheck | Passed: `yarn -s tsc --noEmit --incremental false` — no new errors introduced. |
+
+---
+
+## MyPage Polish (2026-07-02)
+
+### Summary
+Incremental UI polish across the MyPage module. No GraphQL/Apollo logic, routing, auth, or SCSS structure changed. All changes are CSS-class and display-layer fixes only.
+
+### Changes
+
+| File | Change |
+| --- | --- |
+| `libs/components/community/Teditor.tsx` | Removed all inline `style={{...}}` from the fields row Stack (`margin: '40px'`), Typography labels (`color: '#7f838d', margin: '10px'`), FormControl (`background: 'white'`), TextField (`width: '300px', background: 'white'`), and submit Button (`margin: '30px', width: '250px', height: '45px'`). Replaced with CSS class names: `editor-fields-row`, `form-field`, `field-label`, `field-input`, `editor-submit-btn`. |
+| `scss/pc/mypage/writeArticle.scss` | Full premium rewrite. Removed fragile MUI class selector (`.css-guvl2y-MuiButtonBase-root-MuiButton-root`) and old `#87cdf9` brand colors. Added styling for `.editor-fields-row` (soft blue card, joined to editor canvas), `.form-field`, `.field-label` (uppercase muted label), `.field-input` (white background, rounded), `.editor-submit-btn` (gradient navy-to-blue button with hover lift). |
+| `scss/pc/mypage/addNewProperty.scss` | Replaced two occurrences of `#eb6753` (old Nestar orange) with `var(--dashboard-secondary)`: upload box dashed border (line 243) and submit button background (line 369). |
+| `libs/components/mypage/MyProperties.tsx` | Fixed raw enum display in Current Status Filter metric card — changed `{searchFilter.search.vehicleStatus}` to formatted readable label (e.g., "Available", "Reserved", "Sold") with nullish fallback to "All". |
+| `libs/components/mypage/MyArticles.tsx` | Updated stale subtitle from "We are glad to see you again!" to "Manage and track your published community articles." Updated heading from "Article" to "My Articles". |
+
+### Validation
+
+| Validation | Status |
+| --- | --- |
+| TypeScript typecheck | Passed: `yarn -s tsc --noEmit --incremental false` — no new errors introduced. |
