@@ -45,6 +45,12 @@ export class Vehicle {
 	@Field(() => String, { nullable: true })
 	vehicleDesc?: string;
 
+	@Field(() => String, { nullable: true })
+	vehicleBodyType?: string;
+
+	@Field(() => Int, { nullable: true })
+	vehicleMileage?: number;
+
 	@Field(() => VehicleStatus)
 	vehicleStatus!: VehicleStatus;
 

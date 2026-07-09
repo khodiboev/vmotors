@@ -66,6 +66,14 @@ const VehicleSchema = new Schema(
 			type: String,
 		},
 
+		vehicleBodyType: {
+			type: String,
+		},
+
+		vehicleMileage: {
+			type: Number,
+		},
+
 		vehicleStatus: {
 			type: String,
 			enum: VehicleStatus,

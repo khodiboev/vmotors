@@ -63,5 +63,16 @@ export class VehicleInput {
 	@Field(() => String, { nullable: true })
 	vehicleDesc?: string;
 
+	@IsOptional()
+	@Length(1, 100)
+	@Field(() => String, { nullable: true })
+	vehicleBodyType?: string;
+
+	@IsOptional()
+	@IsInt()
+	@Min(0)
+	@Field(() => Int, { nullable: true })
+	vehicleMileage?: number;
+
 	memberId!: ObjectId;
 }

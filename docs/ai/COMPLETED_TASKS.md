@@ -1,5 +1,23 @@
 # Completed Tasks
 
+## Frontend Community UI Update Note (2026-07-10)
+
+This documentation note records the latest frontend Community work for backend context only.
+
+| Area | Status |
+| --- | --- |
+| Backend files | No backend changes in this update. |
+| Backend logic | No backend changes in this update. |
+| GraphQL/API contracts | Unchanged. Existing `LIKE_TARGET_BOARD_ARTICLE` behavior, board-article APIs, and social modules were preserved. |
+| Frontend Community grid | Updated in the frontend repo from a 2-column desktop article grid to a 3-column desktop grid, with tablet 2-column and mobile 1-column responsive behavior. |
+| Frontend article card overflow | Article descriptions now clamp to 2 lines with ellipsis; titles remain clamped and card footers remain aligned. |
+| Frontend article-like feedback | Board-article like/unlike success feedback now uses a local Santa-themed animated floating card instead of the previous top-right SweetAlert success toast. |
+| Feedback copy | The frontend feedback now shows "Article liked" and "Article unliked". |
+
+**Backend note:** No resolver, service, schema, DTO, database, cache, mutation, query, route, pagination, or API behavior changed. This was a frontend UI-only Community/article feedback update.
+
+---
+
 ## Session Summary
 
 This session completed the backend catalog migration from property listings to Santa vehicles. The active GraphQL API now uses vehicle operations, the active MongoDB catalog collection is `vehicles`, and social/batch/member counters were repointed to vehicle terminology.
