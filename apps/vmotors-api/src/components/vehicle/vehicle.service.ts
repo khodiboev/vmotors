@@ -5,6 +5,8 @@ import { Model, ObjectId } from 'mongoose';
 import { LikeService } from '../like/like.service';
 import { MemberService } from '../member/member.service';
 import { ViewService } from '../view/view.service';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationGroup, NotificationType } from '../../libs/enums/notification.enum';
 import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 import { VehicleInput } from '../../libs/dto/vehicle/vehicle.input';
 import { VehicleUpdate } from '../../libs/dto/vehicle/vehicle.update';
@@ -30,6 +32,7 @@ export class VehicleService {
 		private memberService: MemberService,
 		private viewService: ViewService,
 		private likeService: LikeService,
+		private notificationService: NotificationService,
 	) {}
 
 	public async createVehicle(input: VehicleInput): Promise<Vehicle> {
@@ -223,6 +226,18 @@ export class VehicleService {
 
 		const modifier: number = await this.likeService.toggleLike(input);
 		const result = await this.vehicleStatsEditor({ _id: likeRefId, targetKey: 'vehicleLikes', modifier });
+
+		if (modifier === 1) {
+			await this.notificationService.createNotification({
+				notificationType: NotificationType.LIKE,
+				notificationGroup: NotificationGroup.VEHICLE,
+				notificationTitle: 'liked your vehicle',
+				notificationDesc: `${target.vehicleBrand} ${target.vehicleModel}`,
+				authorId: memberId,
+				receiverId: target.memberId,
+				vehicleId: likeRefId,
+			});
+		}
 
 		if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
 		return result;

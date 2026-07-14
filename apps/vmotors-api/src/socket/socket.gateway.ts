@@ -101,6 +101,14 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 		this.emitMessage(newMessage);
 	}
 
+	public sendNotification(receiverId: string, notification: any): void {
+		this.clientsAuthMap.forEach((member, client) => {
+			if (member && String(member._id) === receiverId && client.readyState === WebSocket.OPEN) {
+				client.send(JSON.stringify({ event: 'notification', data: notification }));
+			}
+		});
+	}
+
 	private broadcastMessage(sender: WebSocket, message: InfoPayload | MessagePayload) {
 		this.server.clients.forEach((client) => {
 			if (client !== sender && client.readyState === WebSocket.OPEN) {

@@ -11,6 +11,8 @@ import { CommentUpdate } from '../../libs/dto/comment/comment.update';
 import { Comment, Comments } from '../../libs/dto/comment/comment';
 import { lookupMember } from '../../libs/config';
 import { T } from '../../libs/types/common';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationGroup, NotificationType } from '../../libs/enums/notification.enum';
 
 @Injectable()
 export class CommentService {
@@ -19,6 +21,7 @@ export class CommentService {
 		private readonly memberService: MemberService,
 		private readonly vehicleService: VehicleService,
 		private readonly boardArticleService: BoardArticleService,
+		private readonly notificationService: NotificationService,
 	) {}
 
 	public async createComment(memberId: ObjectId, input: CommentInput): Promise<Comment> {
@@ -33,27 +36,60 @@ export class CommentService {
 		}
 
 		switch (input.commentGroup) {
-			case CommentGroup.VEHICLE:
-				await this.vehicleService.vehicleStatsEditor({
+			case CommentGroup.VEHICLE: {
+				const vehicle = await this.vehicleService.vehicleStatsEditor({
 					_id: input.commentRefId,
 					targetKey: 'vehicleComments',
 					modifier: 1,
 				});
+				if (vehicle) {
+					await this.notificationService.createNotification({
+						notificationType: NotificationType.COMMENT,
+						notificationGroup: NotificationGroup.VEHICLE,
+						notificationTitle: 'commented on your vehicle',
+						notificationDesc: input.commentContent,
+						authorId: memberId,
+						receiverId: vehicle.memberId,
+						vehicleId: input.commentRefId,
+					});
+				}
 				break;
-			case CommentGroup.ARTICLE:
-				await this.boardArticleService.boardArticleStatsEditor({
+			}
+			case CommentGroup.ARTICLE: {
+				const article = await this.boardArticleService.boardArticleStatsEditor({
 					_id: input.commentRefId,
 					targetKey: 'articleComments',
 					modifier: 1,
 				});
+				if (article) {
+					await this.notificationService.createNotification({
+						notificationType: NotificationType.COMMENT,
+						notificationGroup: NotificationGroup.ARTICLE,
+						notificationTitle: 'commented on your article',
+						notificationDesc: input.commentContent,
+						authorId: memberId,
+						receiverId: article.memberId,
+						articleId: input.commentRefId,
+					});
+				}
 				break;
-			case CommentGroup.MEMBER:
+			}
+			case CommentGroup.MEMBER: {
 				await this.memberService.memberStatsEditor({
 					_id: input.commentRefId,
 					targetKey: 'memberComments',
 					modifier: 1,
 				});
+				await this.notificationService.createNotification({
+					notificationType: NotificationType.COMMENT,
+					notificationGroup: NotificationGroup.MEMBER,
+					notificationTitle: 'left a review on your profile',
+					notificationDesc: input.commentContent,
+					authorId: memberId,
+					receiverId: input.commentRefId,
+				});
 				break;
+			}
 		}
 
 		if (!result) throw new InternalServerErrorException(Message.CREATE_FAILED);

@@ -7,6 +7,7 @@ import { LikeModule } from './like/like.module';
 import { ViewModule } from './view/view.module';
 import { FollowModule } from './follow/follow.module';
 import { BoardArticleModule } from './board-article/board-article.module';
+import { NotificationModule } from './notification/notification.module';
 
 /**
  * MODULE nima?
@@ -38,6 +39,7 @@ import { BoardArticleModule } from './board-article/board-article.module';
 		LikeModule, // Yoqtirishlar (like)
 		ViewModule, // Ko'rishlar soni
 		FollowModule, // Obuna (follow/unfollow)
+		NotificationModule, // Bildirishnomalar: xabar, like, comment
 	],
 })
 export class ComponentsModule {}
