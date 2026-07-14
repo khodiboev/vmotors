@@ -15,6 +15,10 @@ const NoticeSchema = new Schema(
 			default: NoticeStatus.ACTIVE,
 		},
 
+		noticeSubCategory: {
+			type: String,
+		},
+
 		noticeTitle: {
 			type: String,
 			required: true,
