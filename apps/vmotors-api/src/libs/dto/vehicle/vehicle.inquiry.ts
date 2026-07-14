@@ -155,6 +155,10 @@ export class AllVehicleSearch {
 	@IsOptional()
 	@Field(() => [String], { nullable: true })
 	vehicleLocationList?: string[];
+
+	@IsOptional()
+	@Field(() => String, { nullable: true })
+	text?: string;
 }
 
 @InputType()

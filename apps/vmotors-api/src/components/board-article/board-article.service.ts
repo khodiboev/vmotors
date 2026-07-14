@@ -166,12 +166,13 @@ export class BoardArticleService {
 	/** ADMIN */
 
 	public async getAllBoardArticlesByAdmin(input: AllBoardArticlesInquiry): Promise<BoardArticles> {
-		const { articleStatus, articleCategory } = input.search;
+		const { articleStatus, articleCategory, text } = input.search;
 		const match: T = {};
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
 
 		if (articleStatus) match.articleStatus = articleStatus;
 		if (articleCategory) match.articleCategory = articleCategory;
+		if (text) match.articleTitle = { $regex: new RegExp(text, 'i') };
 
 		const result = await this.boardArticleModel
 			.aggregate([

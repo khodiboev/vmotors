@@ -244,13 +244,23 @@ export class VehicleService {
 	}
 
 	public async getAllVehiclesByAdmin(input: AllVehiclesInquiry): Promise<Vehicles> {
-		const { vehicleStatus, vehicleBrandList, vehicleLocationList } = input.search;
+		const { vehicleStatus, vehicleBrandList, vehicleLocationList, text } = input.search;
 		const match: T = { deletedAt: { $exists: false } };
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
 
 		if (vehicleStatus) match.vehicleStatus = vehicleStatus;
 		if (vehicleBrandList && vehicleBrandList.length) match.vehicleBrand = { $in: vehicleBrandList };
 		if (vehicleLocationList && vehicleLocationList.length) match.vehicleLocation = { $in: vehicleLocationList };
+		if (text) {
+			const regex = new RegExp(text, 'i');
+			match.$or = [
+				{ vehicleBrand: regex },
+				{ vehicleModel: regex },
+				{ vehicleTrim: regex },
+				{ vehicleColor: regex },
+				{ vehicleLocation: regex },
+			];
+		}
 
 		const result = await this.vehicleModel
 			.aggregate([
