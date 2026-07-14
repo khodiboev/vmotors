@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { Member, Members } from '../../libs/dto/member/member';
 import { AgentsInquiry, LoginInput, MemberInput, MembersInquiry } from '../../libs/dto/member/member.input';
-import { MemberStatus } from '../../libs/enums/member.enum';
+import { MemberStatus, MemberType } from '../../libs/enums/member.enum';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { AuthService } from '../auth/auth.service';
 import { MemberUpdate } from '../../libs/dto/member/member.update';
@@ -28,6 +28,8 @@ export class MemberService {
 	) {}
 
 	public async signup(input: MemberInput): Promise<Member> {
+		// Self-signup is USER-only; dealer (AGENT) status is granted later by an admin
+		input.memberType = MemberType.USER;
 		input.memberPassword = await this.authService.hashPassword(input.memberPassword);
 		try {
 			const result = await this.memberModel.create(input);
