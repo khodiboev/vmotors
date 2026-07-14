@@ -127,8 +127,10 @@ export class MemberService {
 
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
 
-		if (text) match.memberNick = { $regex: new RegExp(text, 'i') };
-		console.log('Match object for getAgents:', match);
+		if (text) {
+			const regex = { $regex: new RegExp(text, 'i') };
+			match.$or = [{ memberNick: regex }, { memberFullName: regex }, { memberAddress: regex }];
+		}
 
 		const result = await this.memberModel
 			.aggregate([
@@ -137,9 +139,9 @@ export class MemberService {
 				{
 					$facet: {
 						list: [
-							{ $skip: (input.page - 1) * input.limit }, 
-							{ $limit: input.limit }, 
-							lookupAuthMemberLiked(memberId) 
+							{ $skip: (input.page - 1) * input.limit },
+							{ $limit: input.limit },
+							lookupAuthMemberLiked(memberId)
 						],
 						metaCounter: [{ $count: 'total' }],
 					},
