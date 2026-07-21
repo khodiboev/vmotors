@@ -84,6 +84,16 @@ export class MemberService {
 		return result;
 	}
 
+	public async getSupportContact(): Promise<Member> {
+		const targetMember = await this.memberModel
+			.findOne({ memberType: MemberType.ADMIN, memberStatus: MemberStatus.ACTIVE })
+			.sort({ createdAt: 1 })
+			.lean()
+			.exec();
+		if (!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+		return targetMember;
+	}
+
 	public async getMember(memberId: ObjectId | null, targetId: ObjectId): Promise<Member> {
 		const search: T = {
 			_id: targetId,

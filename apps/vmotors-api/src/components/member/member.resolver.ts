@@ -63,6 +63,13 @@ export class MemberResolver {
 
 	@UseGuards(WithoutGuard)
 	@Query(() => Member)
+	public async getSupportContact(): Promise<Member> {
+		console.log('Query: getSupportContact');
+		return await this.memberService.getSupportContact();
+	}
+
+	@UseGuards(WithoutGuard)
+	@Query(() => Member)
 	public async getMember(@Args('memberId') input: string, @AuthMember('_id') memberId: ObjectId): Promise<Member> {
 		console.log('Query: getMember');
 		console.log('Authenticated memberId:', memberId);
