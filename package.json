@@ -11,7 +11,6 @@
 		"start": "nest start",
 		"start:dev": "nest start --watch",
 		"start:dev:batch": "nest start vmotors-batch --watch",
-		"train": "ts-node train.ts",
 		"start:debug": "nest start --debug --watch",
 		"start:prod": "NODE_ENV=production node dist/apps/vmotors-api/main",
 		"start:prod:batch": "node dist/apps/vmotors-batch/main",
