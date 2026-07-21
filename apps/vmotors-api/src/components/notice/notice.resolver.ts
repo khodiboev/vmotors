@@ -2,7 +2,6 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import type { ObjectId } from 'mongoose';
 import { NoticeService } from './notice.service';
-import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { WithoutGuard } from '../auth/guards/without.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -20,7 +19,6 @@ export class NoticeResolver {
 	@UseGuards(WithoutGuard)
 	@Query(() => Notices)
 	public async getNotices(@Args('input') input: NoticesInquiry): Promise<Notices> {
-		console.log('Query: getNotices');
 		return await this.noticeService.getNotices(input);
 	}
 
@@ -33,7 +31,6 @@ export class NoticeResolver {
 		@Args('input') input: NoticeInput,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Notice> {
-		console.log('Mutation: createNoticeByAdmin');
 		return await this.noticeService.createNoticeByAdmin(memberId, input);
 	}
 
@@ -41,7 +38,6 @@ export class NoticeResolver {
 	@UseGuards(RolesGuard)
 	@Mutation(() => Notice)
 	public async updateNoticeByAdmin(@Args('input') input: NoticeUpdate): Promise<Notice> {
-		console.log('Mutation: updateNoticeByAdmin');
 		input._id = shapeIntoMongoObjectId(input._id);
 		return await this.noticeService.updateNoticeByAdmin(input);
 	}
@@ -50,7 +46,6 @@ export class NoticeResolver {
 	@UseGuards(RolesGuard)
 	@Mutation(() => Notice)
 	public async removeNoticeByAdmin(@Args('noticeId') noticeId: string): Promise<Notice> {
-		console.log('Mutation: removeNoticeByAdmin');
 		return await this.noticeService.removeNoticeByAdmin(shapeIntoMongoObjectId(noticeId));
 	}
 
@@ -58,7 +53,6 @@ export class NoticeResolver {
 	@UseGuards(RolesGuard)
 	@Query(() => Notices)
 	public async getAllNoticesByAdmin(@Args('input') input: NoticesInquiry): Promise<Notices> {
-		console.log('Query: getAllNoticesByAdmin');
 		return await this.noticeService.getAllNoticesByAdmin(input);
 	}
 }

@@ -23,21 +23,17 @@ export class MemberResolver {
 
 	@Mutation(() => Member)
 	public async signup(@Args('input') input: MemberInput): Promise<Member> {
-		console.log('Mutation: signup');
 		return await this.memberService.signup(input);
 	}
 
 	@Mutation(() => Member)
 	public async login(@Args('input') input: LoginInput): Promise<Member> {
-		console.log('Mutation: login');
 		return await this.memberService.login(input);
 	}
 
 	@UseGuards(AuthGuard)
 	@Query(() => String)
 	public async checkAuth(@AuthMember('memberNick') memberNick: string): Promise<String> {
-		console.log('Query: checkAuth');
-		console.log('Authenticated memberNick:', memberNick);
 		return `Hi ${memberNick}`;
 	}
 
@@ -45,8 +41,6 @@ export class MemberResolver {
 	@UseGuards(RolesGuard)
 	@Query(() => String)
 	public async checkAuthRoles(@AuthMember() authMember: Member): Promise<String> {
-		console.log('Query: checkAuthRoles');
-		console.log('Authenticated memberNick:', authMember.memberNick);
 		return `Hi ${authMember.memberNick}, you are ${authMember.memberType}, (memberId: ${authMember._id})`;
 	}
 
@@ -56,7 +50,6 @@ export class MemberResolver {
 		@Args('input') input: MemberUpdate,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Member> {
-		console.log('Mutation: updateMember');
 		delete (input as any)._id;
 		return await this.memberService.updateMember(memberId, input);
 	}
@@ -64,15 +57,12 @@ export class MemberResolver {
 	@UseGuards(WithoutGuard)
 	@Query(() => Member)
 	public async getSupportContact(): Promise<Member> {
-		console.log('Query: getSupportContact');
 		return await this.memberService.getSupportContact();
 	}
 
 	@UseGuards(WithoutGuard)
 	@Query(() => Member)
 	public async getMember(@Args('memberId') input: string, @AuthMember('_id') memberId: ObjectId): Promise<Member> {
-		console.log('Query: getMember');
-		console.log('Authenticated memberId:', memberId);
 		const targetId = shapeIntoMongoObjectId(input);
 		return await this.memberService.getMember(memberId, targetId);
 	}
@@ -80,7 +70,6 @@ export class MemberResolver {
 	@UseGuards(WithoutGuard)
 	@Query(() => Members)
 	public async getAgents(@Args('input') input: AgentsInquiry, @AuthMember('_id') memberId: ObjectId): Promise<Members> {
-		console.log('Query: getAgents');
 		return await this.memberService.getAgents(input, memberId);
 	}
 
@@ -90,7 +79,6 @@ export class MemberResolver {
 		@Args('memberId') input: string,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Member> {
-		console.log('Mutation: likeTargetMember');
 		const likeRefId = shapeIntoMongoObjectId(input);
 		return await this.memberService.likeTargetMember(memberId, likeRefId);
 	}
@@ -101,7 +89,6 @@ export class MemberResolver {
 	@UseGuards(RolesGuard)
 	@Query(() => Members)
 	public async getAllMembersByAdmin(@Args('input') input: MembersInquiry): Promise<Members> {
-		console.log('Query: getAllMembersByAdmin');
 		return await this.memberService.getAllMembersByAdmin(input);
 	}
 
@@ -109,7 +96,6 @@ export class MemberResolver {
 	@UseGuards(RolesGuard)
 	@Mutation(() => Member)
 	public async updateMemberByAdmin(@Args('input') input: MemberUpdate): Promise<Member> {
-		console.log('Mutation: updateMemberByAdmin');
 		return await this.memberService.updateMemberByAdmin(input);
 	}
 
@@ -120,8 +106,6 @@ export class MemberResolver {
 		{ createReadStream, filename, mimetype }: FileUpload,
 		@Args('target') target: String,
 	): Promise<string> {
-		console.log('Mutation: imageUploader');
-
 		if (!filename) throw new Error(Message.UPLOAD_FAILED);
 		const validMime = validMimeTypes.includes(mimetype);
 		if (!validMime) throw new Error(Message.PROVIDE_ALLOWED_FORMAT);
@@ -148,8 +132,6 @@ export class MemberResolver {
 		files: Promise<FileUpload>[],
 		@Args('target') target: String,
 	): Promise<string[]> {
-		console.log('Mutation: imagesUploader');
-
 		const uploadedImages: string[] = [];
 		const promisedList = files.map(async (img: Promise<FileUpload>, index: number): Promise<Promise<void>> => {
 			try {

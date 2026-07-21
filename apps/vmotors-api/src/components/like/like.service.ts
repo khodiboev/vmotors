@@ -32,7 +32,6 @@ export class LikeService {
 			}
 		}
 
-		console.log('Like toggled, modifier:', modifier);
 		return modifier;
 	}
 

@@ -31,7 +31,6 @@ export class VehicleResolver {
 		@Args('input') input: VehicleInput,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Vehicle> {
-		console.log('Mutation: createVehicle');
 		input.memberId = memberId;
 		return await this.vehicleService.createVehicle(input);
 	}
@@ -42,7 +41,6 @@ export class VehicleResolver {
 		@Args('vehicleId') input: string,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Vehicle> {
-		console.log('Query: getVehicle');
 		const vehicleId = shapeIntoMongoObjectId(input);
 		return await this.vehicleService.getVehicle(vehicleId, memberId);
 	}
@@ -54,7 +52,6 @@ export class VehicleResolver {
 		@Args('input') input: VehicleUpdate,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Vehicle> {
-		console.log('Mutation: updateVehicle');
 		input._id = shapeIntoMongoObjectId(input._id);
 		return await this.vehicleService.updateVehicle(memberId, input);
 	}
@@ -65,7 +62,6 @@ export class VehicleResolver {
 		@Args('input') input: VehiclesInquiry,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Vehicles> {
-		console.log('Query: getVehicles');
 		return await this.vehicleService.getVehicles(memberId, input);
 	}
 
@@ -75,7 +71,6 @@ export class VehicleResolver {
 		@Args('input') input: OrdinaryInquiry,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Vehicles> {
-		console.log('Query: getFavorites');
 		return await this.vehicleService.getFavorites(memberId, input);
 	}
 
@@ -85,7 +80,6 @@ export class VehicleResolver {
 		@Args('input') input: OrdinaryInquiry,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Vehicles> {
-		console.log('Query: getVisited');
 		return await this.vehicleService.getVisited(memberId, input);
 	}
 
@@ -96,7 +90,6 @@ export class VehicleResolver {
 		@Args('input') input: DealerVehiclesInquiry,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Vehicles> {
-		console.log('Query: getDealerVehicles');
 		return await this.vehicleService.getDealerVehicles(memberId, input);
 	}
 
@@ -106,7 +99,6 @@ export class VehicleResolver {
 		@Args('vehicleId') input: string,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Vehicle> {
-		console.log('Mutation: likeTargetVehicle');
 		const likeRefId = shapeIntoMongoObjectId(input);
 		return await this.vehicleService.likeTargetVehicle(memberId, likeRefId);
 	}
@@ -115,7 +107,6 @@ export class VehicleResolver {
 	@UseGuards(RolesGuard)
 	@Query(() => Vehicles)
 	public async getAllVehiclesByAdmin(@Args('input') input: AllVehiclesInquiry): Promise<Vehicles> {
-		console.log('Query: getAllVehiclesByAdmin');
 		return await this.vehicleService.getAllVehiclesByAdmin(input);
 	}
 
@@ -123,7 +114,6 @@ export class VehicleResolver {
 	@UseGuards(RolesGuard)
 	@Mutation(() => Vehicle)
 	public async updateVehicleByAdmin(@Args('input') input: VehicleUpdate): Promise<Vehicle> {
-		console.log('Mutation: updateVehicleByAdmin');
 		input._id = shapeIntoMongoObjectId(input._id);
 		return await this.vehicleService.updateVehicleByAdmin(input);
 	}
@@ -132,7 +122,6 @@ export class VehicleResolver {
 	@UseGuards(RolesGuard)
 	@Mutation(() => Vehicle)
 	public async removeVehicleByAdmin(@Args('vehicleId') input: string): Promise<Vehicle> {
-		console.log('Mutation: removeVehicleByAdmin');
 		const vehicleId = shapeIntoMongoObjectId(input);
 		return await this.vehicleService.removeVehicleByAdmin(vehicleId);
 	}
