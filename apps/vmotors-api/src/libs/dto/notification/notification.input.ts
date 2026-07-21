@@ -39,6 +39,22 @@ export class NotificationsInquiry {
 }
 
 @InputType()
+export class NotificationUpdate {
+	@IsNotEmpty()
+	@Field(() => String)
+	_id!: ObjectId;
+
+	@IsOptional()
+	@Length(1, 500)
+	@Field(() => String, { nullable: true })
+	notificationDesc?: string;
+
+	@IsOptional()
+	@Field(() => NotificationStatus, { nullable: true })
+	notificationStatus?: NotificationStatus;
+}
+
+@InputType()
 export class ConversationInquiry {
 	@IsNotEmpty()
 	@Field(() => String)

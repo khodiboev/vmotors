@@ -9,6 +9,7 @@ import {
 	ConversationInquiry,
 	MessageInput,
 	NotificationsInquiry,
+	NotificationUpdate,
 } from '../../libs/dto/notification/notification.input';
 import { shapeIntoMongoObjectId } from '../../libs/config';
 
@@ -26,6 +27,17 @@ export class NotificationResolver {
 		input.receiverId = shapeIntoMongoObjectId(input.receiverId);
 		if (input.vehicleId) input.vehicleId = shapeIntoMongoObjectId(input.vehicleId);
 		return await this.notificationService.sendMessage(memberId, input);
+	}
+
+	@UseGuards(AuthGuard)
+	@Mutation(() => Notification)
+	public async updateMessage(
+		@Args('input') input: NotificationUpdate,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<Notification> {
+		console.log('Mutation: updateMessage');
+		input._id = shapeIntoMongoObjectId(input._id);
+		return await this.notificationService.updateMessage(memberId, input);
 	}
 
 	@UseGuards(AuthGuard)

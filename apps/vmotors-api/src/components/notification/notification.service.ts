@@ -7,6 +7,7 @@ import {
 	MessageInput,
 	NotificationCreate,
 	NotificationsInquiry,
+	NotificationUpdate,
 } from '../../libs/dto/notification/notification.input';
 import { NotificationGroup, NotificationStatus, NotificationType } from '../../libs/enums/notification.enum';
 import { Message } from '../../libs/enums/common.enum';
@@ -47,6 +48,24 @@ export class NotificationService {
 		});
 		if (!notification) throw new InternalServerErrorException(Message.CREATE_FAILED);
 		return notification;
+	}
+
+	public async updateMessage(memberId: ObjectId, input: NotificationUpdate): Promise<Notification> {
+		const { _id } = input;
+		const result = await this.notificationModel
+			.findOneAndUpdate(
+				{
+					_id,
+					authorId: memberId,
+					notificationType: NotificationType.MESSAGE,
+					notificationStatus: { $ne: NotificationStatus.DELETE },
+				},
+				input,
+				{ new: true },
+			)
+			.exec();
+		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+		return result;
 	}
 
 	public async getMyNotifications(memberId: ObjectId, input: NotificationsInquiry): Promise<Notifications> {
@@ -110,6 +129,7 @@ export class NotificationService {
 				{
 					$match: {
 						notificationType: NotificationType.MESSAGE,
+						notificationStatus: { $ne: NotificationStatus.DELETE },
 						$or: [{ authorId: memberId }, { receiverId: memberId }],
 					},
 				},
@@ -160,6 +180,7 @@ export class NotificationService {
 		const { peerId, page, limit } = input;
 		const match: T = {
 			notificationType: NotificationType.MESSAGE,
+			notificationStatus: { $ne: NotificationStatus.DELETE },
 			$or: [
 				{ authorId: memberId, receiverId: peerId },
 				{ authorId: peerId, receiverId: memberId },

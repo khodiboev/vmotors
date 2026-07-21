@@ -12,6 +12,7 @@ registerEnumType(NotificationType, {
 export enum NotificationStatus {
 	WAIT = 'WAIT',
 	READ = 'READ',
+	DELETE = 'DELETE',
 }
 registerEnumType(NotificationStatus, {
 	name: 'NotificationStatus',
