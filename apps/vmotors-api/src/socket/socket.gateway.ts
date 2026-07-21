@@ -37,7 +37,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 	@WebSocketServer()
 	server!: Server;
 
-	public afterInit(server: Server) {
+	public afterInit(_server: Server) {
 		this.logger.verbose(`WebSocket Server Initialized & total [${this.summaryClient}]`);
 	}
 
@@ -92,7 +92,6 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 		const authMember = this.clientsAuthMap.get(_client);
 		const newMessage: MessagePayload = { event: 'message', text: payload, memberData: authMember };
 
-		const clientNick: string = authMember ? authMember.memberNick : 'Guest';
 		this.logger.verbose(`NEW MESSAGE: ${payload}`);
 
 		this.messagesList.push(newMessage);

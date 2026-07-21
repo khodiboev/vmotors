@@ -1,5 +1,4 @@
 import { registerEnumType } from "@nestjs/graphql";
-import { register } from "module";
 
 export enum Message {
  SOMETHING_WENT_WRONG = 'Something went wrong!',
