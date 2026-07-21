@@ -1,7 +1,7 @@
 import { BadRequestException, CanActivate, ExecutionContext, Injectable, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthService } from '../auth.service';
-import { Message } from 'apps/vmotors-api/src/libs/enums/common.enum';
+import { Message } from '../../../libs/enums/common.enum';
 
 /**
  * RolesGuard — foydalanuvchining rolini tekshiruvchi Guard (himoyachi).
@@ -37,8 +37,6 @@ export class RolesGuard implements CanActivate {
 		const roles = this.reflector.get<string[]>('roles', context.getHandler());
 		if (!roles) return true;
 
-		console.info(`--- @guard() Authentication [RolesGuard]: ${roles} ---`);
-
 		if (context.contextType === 'graphql') {
 			// GraphQL kontekstida 3-argument (index 2) — context ob'ekti, uning ichida req bor
 			const request = context.getArgByIndex(2).req;
@@ -57,8 +55,6 @@ export class RolesGuard implements CanActivate {
 
 			// Foydalanuvchi topilmasa yoki roli mos kelmasa — 403 Forbidden xatosi
 			if (!authMember || !hasPermission) throw new ForbiddenException(Message.ONLY_SPECIFIC_ROLES_ALLOWED);
-
-			console.log('memberNick[roles] =>', authMember.memberNick);
 
 			// Keyingi resolver'lar authMember'ga @AuthMember() dekorator orqali
 			// kirishlari uchun uni request.body'ga saqlaymiz
