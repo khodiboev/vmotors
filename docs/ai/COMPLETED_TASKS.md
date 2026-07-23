@@ -1,5 +1,26 @@
 # Completed Tasks
 
+## Fix: Sold/Reserved Vehicles Leaking Into Recently Viewed and Favorites (2026-07-23)
+
+**Symptom (reported from the frontend):** a vehicle that had been marked `SOLD` still showed up as a card in a member's Recently Viewed and (potentially) Saved Vehicles lists on the frontend, with a broken image, and clicking through to it landed on "vehicle not found" — because `getVehicle` correctly only serves `AVAILABLE` vehicles, but the two list endpoints behind those pages did not apply the same filter.
+
+**Root cause:** `ViewService.getVisitedVehicles` (`components/view/view.service.ts`) and `LikeService.getFavoriteVehicles` (`components/like/like.service.ts`) both filtered their `$lookup`'d vehicle only by `deletedAt: { $exists: false }` — no `vehicleStatus` check. Once a vehicle transitioned to `SOLD` (or `RESERVED`), it stayed permanently visible in anyone's view/favorite history as a dead link. This contradicts the migration's own stated intent that "public listings show available non-deleted vehicles" (see the Session Summary below, "Vehicle behavior" row) — `getVehicle` and the main `getVehicles` list already enforced that; these two aggregations were the gap.
+
+| Area | Change |
+| --- | --- |
+| `view.service.ts` | `$match` after the vehicle `$lookup`/`$unwind` now also requires `vehicleStatus: VehicleStatus.AVAILABLE`, matching `getVehicle`'s existing rule. |
+| `like.service.ts` | Same fix, same shape, for the favorites aggregation. |
+| Data | No documents changed. Sold vehicles remain in the database untouched — they are simply excluded from these two list queries going forward, same as they already were from the main catalog listing. |
+
+**Validation:**
+- `npx tsc -p apps/vmotors-api/tsconfig.app.json --noEmit` — passed.
+- Live verification against real data: found the exact vehicle and member from the frontend report by querying `db.views.findOne({ viewRefId: <vehicleId> })` directly in MongoDB to get the real `memberId`, then called `getVisited` with that member's own credentials before and after — their list dropped from 16 entries (including the sold vehicle) to 15, all `AVAILABLE`.
+- The running `nest start --watch` process picked up both file changes without crashing.
+
+**Not changed:** `getVehicle`, `getVehicles` (main public list, already correct), vehicle schema, GraphQL contracts, DTOs, any resolver signatures.
+
+---
+
 ## Frontend Community UI Update Note (2026-07-10)
 
 This documentation note records the latest frontend Community work for backend context only.

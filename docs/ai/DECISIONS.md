@@ -34,3 +34,11 @@
 | Existing unique indexes on likes/views may not include group | A live database may still enforce old `{ memberId, refId }` uniqueness. | Review/drop/recreate old indexes during deployment if needed. |
 | CI/deploy scripts still call old app IDs | Build/deploy failure | Search external CI/deploy repos for old Nestar app names. |
 | Secret rotation is deferred | Old brand string remains in `.env` | Create a dedicated token rotation task with rollout notes. |
+
+## 2026-07-23: Every Vehicle List Query Must Filter `vehicleStatus: AVAILABLE`, Not Just `deletedAt`
+
+**Decision:** any aggregation/query that returns a list of vehicles for a normal member-facing surface (catalog browse, recently-viewed history, saved/favorites) must filter `vehicleStatus: AVAILABLE` in addition to `deletedAt: { $exists: false }` — matching the rule `getVehicle`/`getVehicles` already enforced.
+
+**Why it needed stating explicitly:** `getVisitedVehicles` and `getFavoriteVehicles` were found filtering only `deletedAt`, letting `SOLD`/`RESERVED` vehicles stay permanently visible (and dead-linked, since `getVehicle` rejects them) in a member's history/favorites. The `deletedAt`-only filter was copied between these two aggregations without re-deriving the full rule from `getVehicle`, so the gap was silent until a frontend bug report surfaced it. See `COMPLETED_TASKS.md`, "Fix: Sold/Reserved Vehicles Leaking Into Recently Viewed and Favorites (2026-07-23)".
+
+**Rule for new code:** when adding a new member-facing vehicle list endpoint, copy the `$match` shape from `getVehicles` (both `deletedAt` and `vehicleStatus: AVAILABLE`), not just from whichever existing aggregation looks structurally closest — the closest one may itself be missing the filter. Admin-facing queries (e.g. `getDealerVehicles`, `getAllVehiclesByAdmin`) are the intentional exception: dealers/admins need to see and manage sold/reserved inventory too.
