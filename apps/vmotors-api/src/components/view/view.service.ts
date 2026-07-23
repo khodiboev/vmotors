@@ -7,6 +7,7 @@ import { T } from '../../libs/types/common';
 import { OrdinaryInquiry } from '../../libs/dto/vehicle/vehicle.inquiry';
 import { Vehicles } from '../../libs/dto/vehicle/vehicles';
 import { ViewGroup } from '../../libs/enums/view.enum';
+import { VehicleStatus } from '../../libs/enums/vehicle.enum';
 import { lookupVisitedVehicle } from '../../libs/config';
 
 @Injectable()
@@ -47,7 +48,12 @@ export class ViewService {
 					},
 				},
 				{ $unwind: '$visitedVehicle' },
-				{ $match: { 'visitedVehicle.deletedAt': { $exists: false } } },
+				{
+					$match: {
+						'visitedVehicle.deletedAt': { $exists: false },
+						'visitedVehicle.vehicleStatus': VehicleStatus.AVAILABLE,
+					},
+				},
 				{
 					$facet: {
 						list: [

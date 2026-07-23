@@ -8,6 +8,7 @@ import { Message } from '../../libs/enums/common.enum';
 import { OrdinaryInquiry } from '../../libs/dto/vehicle/vehicle.inquiry';
 import { Vehicles } from '../../libs/dto/vehicle/vehicles';
 import { LikeGroup } from '../../libs/enums/like.enum';
+import { VehicleStatus } from '../../libs/enums/vehicle.enum';
 import { lookupFavoriteVehicle } from '../../libs/config';
 
 @Injectable()
@@ -59,7 +60,12 @@ export class LikeService {
 					},
 				},
 				{ $unwind: '$favoriteVehicle' },
-				{ $match: { 'favoriteVehicle.deletedAt': { $exists: false } } },
+				{
+					$match: {
+						'favoriteVehicle.deletedAt': { $exists: false },
+						'favoriteVehicle.vehicleStatus': VehicleStatus.AVAILABLE,
+					},
+				},
 				{
 					$facet: {
 						list: [
