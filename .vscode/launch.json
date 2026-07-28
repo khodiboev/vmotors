@@ -4,7 +4,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug VMotors API",
+      "name": "Debug Santa API",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",

@@ -232,7 +232,7 @@ This follow-up session audited the current Santa homepage implementation against
 ## Community Page Auth Guard + Article Detail Redesign (2026-07-02)
 
 ### Summary
-Fixed the "Write Article" guest redirect bug and redesigned the Community Article Detail page to match the VMotors premium design language.
+Fixed the "Write Article" guest redirect bug and redesigned the Community Article Detail page to match the Santa premium design language.
 
 ### Write Article Auth Guard
 
@@ -247,7 +247,7 @@ Fixed the "Write Article" guest redirect bug and redesigned the Community Articl
 | --- | --- |
 | `libs/components/layout/LayoutBasic.tsx` | Fixed banner subtitle for `/community/detail`: `'Home / Vehicles'` → `'Community / Article Detail'`. |
 | `pages/community/detail.tsx` | Removed old sidebar (`.left-config` with SANTA logo image + vertical tabs). Added horizontal `.article-category-nav` strip with `Tabs` (reusing existing `tabChangeHandler`) and an auth-guarded "Write article" button. Restructured content into three premium cards: `.article-header-card` (gradient hero with category badge, title, author row, stats chips), `.article-body-card` (conditional featured image, ToastViewerComponent, like button), `.article-comments-card` (comment input, comment list, pagination). Moved `<Backdrop>` edit modal outside the comment loop. Removed unused MUI imports (`Stack`, `Typography`) and icon (`ChatIcon`). Removed unused state (`anchorEl`, `open`, `id`) and unused query destructuring variables. |
-| `scss/pc/community/detail.scss` | Complete rewrite using VMotors CSS custom property token set (`--cd-primary`, `--cd-secondary`, `--cd-soft`, `--cd-surface`, `--cd-border`, `--cd-shadow`, `--cd-muted`, `--cd-text`). Premium gradient article header card matching vehicle/agent detail page style, clean article body card, comment cards with avatar/name/date/actions, styled edit modal with focus ring and contained-button CTA. |
+| `scss/pc/community/detail.scss` | Complete rewrite using the Santa CSS custom property token set (`--cd-primary`, `--cd-secondary`, `--cd-soft`, `--cd-surface`, `--cd-border`, `--cd-shadow`, `--cd-muted`, `--cd-text`). Premium gradient article header card matching vehicle/agent detail page style, clean article body card, comment cards with avatar/name/date/actions, styled edit modal with focus ring and contained-button CTA. |
 
 ### Validation
 
