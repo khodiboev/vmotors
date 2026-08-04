@@ -51,6 +51,18 @@ const NotificationSchema = new Schema(
 			type: Schema.Types.ObjectId,
 			ref: 'BoardArticle',
 		},
+
+		attachmentUrl: {
+			type: String,
+		},
+
+		attachmentName: {
+			type: String,
+		},
+
+		attachmentSize: {
+			type: Number,
+		},
 	},
 	{ timestamps: true, collection: 'notifications' },
 );

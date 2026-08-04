@@ -37,6 +37,10 @@ export class NotificationService {
 	}
 
 	public async sendMessage(authorId: ObjectId, input: MessageInput): Promise<Notification> {
+		if (!input.notificationDesc?.trim() && !input.attachmentUrl) {
+			throw new InternalServerErrorException(Message.CREATE_FAILED);
+		}
+
 		const notification = await this.createNotification({
 			notificationType: NotificationType.MESSAGE,
 			notificationGroup: input.vehicleId ? NotificationGroup.VEHICLE : NotificationGroup.MEMBER,
@@ -45,6 +49,9 @@ export class NotificationService {
 			authorId,
 			receiverId: input.receiverId,
 			vehicleId: input.vehicleId,
+			attachmentUrl: input.attachmentUrl,
+			attachmentName: input.attachmentName,
+			attachmentSize: input.attachmentSize,
 		});
 		if (!notification) throw new InternalServerErrorException(Message.CREATE_FAILED);
 		return notification;

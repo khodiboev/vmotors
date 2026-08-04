@@ -9,14 +9,27 @@ export class MessageInput {
 	@Field(() => String)
 	receiverId!: ObjectId;
 
-	@IsNotEmpty()
+	// A message needs text or an attachment, not necessarily both — enforced in NotificationService.sendMessage.
+	@IsOptional()
 	@Length(1, 500)
-	@Field(() => String)
-	notificationDesc!: string;
+	@Field(() => String, { nullable: true })
+	notificationDesc?: string;
 
 	@IsOptional()
 	@Field(() => String, { nullable: true })
 	vehicleId?: ObjectId;
+
+	@IsOptional()
+	@Field(() => String, { nullable: true })
+	attachmentUrl?: string;
+
+	@IsOptional()
+	@Field(() => String, { nullable: true })
+	attachmentName?: string;
+
+	@IsOptional()
+	@Field(() => Int, { nullable: true })
+	attachmentSize?: number;
 
 	authorId?: ObjectId;
 }
@@ -80,4 +93,7 @@ export interface NotificationCreate {
 	receiverId: ObjectId;
 	vehicleId?: ObjectId;
 	articleId?: ObjectId;
+	attachmentUrl?: string;
+	attachmentName?: string;
+	attachmentSize?: number;
 }

@@ -35,6 +35,15 @@ export class Notification {
 	@Field(() => String, { nullable: true })
 	articleId?: ObjectId;
 
+	@Field(() => String, { nullable: true })
+	attachmentUrl?: string;
+
+	@Field(() => String, { nullable: true })
+	attachmentName?: string;
+
+	@Field(() => Int, { nullable: true })
+	attachmentSize?: number;
+
 	@Field(() => Date)
 	createdAt!: Date;
 
