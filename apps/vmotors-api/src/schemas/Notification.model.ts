@@ -42,14 +42,26 @@ const NotificationSchema = new Schema(
 			ref: 'Member',
 		},
 
-		propertyId: {
+		vehicleId: {
 			type: Schema.Types.ObjectId,
-			ref: 'Property',
+			ref: 'Vehicle',
 		},
 
 		articleId: {
 			type: Schema.Types.ObjectId,
 			ref: 'BoardArticle',
+		},
+
+		attachmentUrl: {
+			type: String,
+		},
+
+		attachmentName: {
+			type: String,
+		},
+
+		attachmentSize: {
+			type: Number,
 		},
 	},
 	{ timestamps: true, collection: 'notifications' },

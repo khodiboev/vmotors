@@ -18,6 +18,8 @@ import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
 import { LikeService } from '../like/like.service';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationGroup, NotificationType } from '../../libs/enums/notification.enum';
 
 @Injectable()
 export class BoardArticleService {
@@ -26,6 +28,7 @@ export class BoardArticleService {
 		private readonly memberService: MemberService,
 		private readonly viewService: ViewService,
 		private readonly likeService: LikeService,
+		private readonly notificationService: NotificationService,
 	) {}
 
 	public async createBoardArticle(memberId: ObjectId, input: BoardArticleInput): Promise<BoardArticle> {
@@ -40,8 +43,9 @@ export class BoardArticleService {
 
 			return result;
 		} catch (err) {
-			console.log('Error, Service.model:', Message.CREATE_FAILED);
-			throw new BadRequestException(Message.CREATE_FAILED);
+			const message = err instanceof Error && err.message ? err.message : Message.CREATE_FAILED;
+			console.log('Error, Service.model:', message);
+			throw new BadRequestException(message);
 		}
 	}
 
@@ -77,6 +81,7 @@ export class BoardArticleService {
 		const result = await this.boardArticleModel
 			.findOneAndUpdate({ _id: _id, memberId: memberId, articleStatus: BoardArticleStatus.ACTIVE }, input, {
 				new: true,
+				runValidators: true,
 			})
 			.exec();
 
@@ -103,7 +108,6 @@ export class BoardArticleService {
 		if (input.search?.memberId) {
 			match.memberId = shapeIntoMongoObjectId(input.search.memberId);
 		}
-		console.log('match:', match);
 
 		const result = await this.boardArticleModel
 			.aggregate([
@@ -142,6 +146,18 @@ export class BoardArticleService {
 		const modifier: number = await this.likeService.toggleLike(input);
 		const result = await this.boardArticleStatsEditor({ _id: likeRefId, targetKey: 'articleLikes', modifier });
 
+		if (modifier === 1) {
+			await this.notificationService.createNotification({
+				notificationType: NotificationType.LIKE,
+				notificationGroup: NotificationGroup.ARTICLE,
+				notificationTitle: 'liked your article',
+				notificationDesc: target.articleTitle,
+				authorId: memberId,
+				receiverId: target.memberId,
+				articleId: likeRefId,
+			});
+		}
+
 		if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
 		return result;
 	}
@@ -149,12 +165,13 @@ export class BoardArticleService {
 	/** ADMIN */
 
 	public async getAllBoardArticlesByAdmin(input: AllBoardArticlesInquiry): Promise<BoardArticles> {
-		const { articleStatus, articleCategory } = input.search;
+		const { articleStatus, articleCategory, text } = input.search;
 		const match: T = {};
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
 
 		if (articleStatus) match.articleStatus = articleStatus;
 		if (articleCategory) match.articleCategory = articleCategory;
+		if (text) match.articleTitle = { $regex: new RegExp(text, 'i') };
 
 		const result = await this.boardArticleModel
 			.aggregate([
@@ -184,6 +201,7 @@ export class BoardArticleService {
 		const result = await this.boardArticleModel
 			.findOneAndUpdate({ _id: _id, articleStatus: BoardArticleStatus.ACTIVE }, input, {
 				new: true,
+				runValidators: true,
 			})
 			.exec();
 		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);

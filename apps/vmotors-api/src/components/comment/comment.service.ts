@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException } from '@
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { MemberService } from '../member/member.service';
-import { PropertyService } from '../property/property.service';
+import { VehicleService } from '../vehicle/vehicle.service';
 import { BoardArticleService } from '../board-article/board-article.service';
 import { CommentInput, CommentsInquiry } from '../../libs/dto/comment/comment.input';
 import { Direction, Message } from '../../libs/enums/common.enum';
@@ -11,14 +11,17 @@ import { CommentUpdate } from '../../libs/dto/comment/comment.update';
 import { Comment, Comments } from '../../libs/dto/comment/comment';
 import { lookupMember } from '../../libs/config';
 import { T } from '../../libs/types/common';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationGroup, NotificationType } from '../../libs/enums/notification.enum';
 
 @Injectable()
 export class CommentService {
 	constructor(
 		@InjectModel('Comment') private readonly commentModel: Model<Comment>,
 		private readonly memberService: MemberService,
-		private readonly propertyService: PropertyService,
+		private readonly vehicleService: VehicleService,
 		private readonly boardArticleService: BoardArticleService,
+		private readonly notificationService: NotificationService,
 	) {}
 
 	public async createComment(memberId: ObjectId, input: CommentInput): Promise<Comment> {
@@ -33,27 +36,60 @@ export class CommentService {
 		}
 
 		switch (input.commentGroup) {
-			case CommentGroup.PROPERTY:
-				await this.propertyService.propertyStatsEditor({
+			case CommentGroup.VEHICLE: {
+				const vehicle = await this.vehicleService.vehicleStatsEditor({
 					_id: input.commentRefId,
-					targetKey: 'propertyComments',
+					targetKey: 'vehicleComments',
 					modifier: 1,
 				});
+				if (vehicle) {
+					await this.notificationService.createNotification({
+						notificationType: NotificationType.COMMENT,
+						notificationGroup: NotificationGroup.VEHICLE,
+						notificationTitle: 'commented on your vehicle',
+						notificationDesc: input.commentContent,
+						authorId: memberId,
+						receiverId: vehicle.memberId,
+						vehicleId: input.commentRefId,
+					});
+				}
 				break;
-			case CommentGroup.ARTICLE:
-				await this.boardArticleService.boardArticleStatsEditor({
+			}
+			case CommentGroup.ARTICLE: {
+				const article = await this.boardArticleService.boardArticleStatsEditor({
 					_id: input.commentRefId,
 					targetKey: 'articleComments',
 					modifier: 1,
 				});
+				if (article) {
+					await this.notificationService.createNotification({
+						notificationType: NotificationType.COMMENT,
+						notificationGroup: NotificationGroup.ARTICLE,
+						notificationTitle: 'commented on your article',
+						notificationDesc: input.commentContent,
+						authorId: memberId,
+						receiverId: article.memberId,
+						articleId: input.commentRefId,
+					});
+				}
 				break;
-			case CommentGroup.MEMBER:
+			}
+			case CommentGroup.MEMBER: {
 				await this.memberService.memberStatsEditor({
 					_id: input.commentRefId,
 					targetKey: 'memberComments',
 					modifier: 1,
 				});
+				await this.notificationService.createNotification({
+					notificationType: NotificationType.COMMENT,
+					notificationGroup: NotificationGroup.MEMBER,
+					notificationTitle: 'left a review on your profile',
+					notificationDesc: input.commentContent,
+					authorId: memberId,
+					receiverId: input.commentRefId,
+				});
 				break;
+			}
 		}
 
 		if (!result) throw new InternalServerErrorException(Message.CREATE_FAILED);
@@ -77,7 +113,7 @@ export class CommentService {
 		return result;
 	}
 
-	public async getComments(memberId: ObjectId, input: CommentsInquiry): Promise<Comments> {
+	public async getComments(_memberId: ObjectId, input: CommentsInquiry): Promise<Comments> {
 		const { commentRefId } = input.search;
 		const match: T = { commentRefId: commentRefId, commentStatus: CommentStatus.ACTIVE };
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };

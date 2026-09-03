@@ -1,55 +1,56 @@
 # Next Steps
 
-## Priority Order for Tomorrow
+## Priority Order
 
 | Priority | Workstream | Task | Outcome |
 | --- | --- | --- | --- |
-| 1 | Backend cleanup | Review all CI/deploy/runtime scripts outside this workspace for old `nestar-api`, `nestar-batch`, and `nestars` references. | Deployment path compatibility confirmed. |
-| 2 | Testing | Run backend e2e tests against the VMotors app paths and current `.env`. | Confirms runtime behavior beyond typecheck/build. |
-| 3 | Backend cleanup | Decide whether `.env` database URI names and `SECRET_TOKEN` should be migrated or documented as compatibility exceptions. | Clear environment policy. |
-| 4 | Frontend migration | Locate the Next.js frontend repo and run the branding inventory. | Concrete frontend rename map replaces inferred plan. |
-| 5 | Documentation | Update these docs with actual frontend file paths once the frontend repo is available. | Docs stay authoritative. |
+| 1 | Homepage follow-through | Decide whether `PopularProperties` should be restored intentionally or removed as an unused homepage section/component. | The homepage section inventory matches the intended Santa landing-page strategy with no dead-section drift. |
+| 2 | Frontend accessibility | Add reduced-motion handling to the hero/search shell and audit clickable non-link card surfaces for keyboard/focus accessibility. | The premium homepage remains accessible without losing the current design direction. |
+| 3 | Frontend QA | Run desktop/mobile smoke tests against the live Santa frontend and backend for homepage, `/vehicle`, dealer, and community entry flows. | Homepage polish is validated beyond typecheck and code inspection. |
+| 4 | Backend/data policy | Decide whether old member counts or old social rows need backfills into `memberVehicles` and `VEHICLE` groups. | Clear legacy data handling policy. |
+| 5 | Backend cleanup | Audit CI/CD, process manager configs, Dockerfiles, and hosting settings for old Nestar or property catalog references. | Deployment path and runtime compatibility confirmed. |
+| 6 | Environment policy | Decide whether `.env` database URI names and `SECRET_TOKEN` should be migrated or documented as compatibility exceptions. | Clear environment/secret policy. |
 
 ## Backend Cleanup
 
 | Task | Priority | Notes |
 | --- | --- | --- |
-| Audit CI/CD, process manager configs, Dockerfiles, and hosting settings for old app names. | High | Not visible in this workspace. |
+| Add optional backfill for `memberVehicles` if old counts matter. | High | Current migration intentionally does not convert old `properties` data. |
+| Add optional cleanup/migration for old `PROPERTY` likes/views/comments if preserving legacy social history matters. | Medium | Current active API uses `VEHICLE` groups only. |
+| Review MongoDB indexes for `likes` and `views`. | Medium | Schema now indexes `{ memberId, group, refId }`; live DBs may still have old two-field unique indexes. |
 | Run `npm run test:e2e` after confirming database/test environment safety. | High | E2E may connect to configured MongoDB. |
+| Audit external CI/CD and hosting scripts. | High | External scripts are not visible in this workspace. |
 | Decide on JWT secret rotation. | Medium | Changing `nestar_secret_token` invalidates active tokens. |
-| Decide whether database name `VMotors` is final per environment. | Medium | Avoid accidental production data split. |
-| Normalize ESLint dependency declarations. | Medium | `typescript-eslint` v8 was added to load the flat config; legacy v6 parser/plugin entries should be reviewed. |
-| Plan lint cleanup separately. | Medium | Do not mix with rename review. |
+| Plan lint cleanup separately. | Medium | `npm run lint` runs ESLint with `--fix`, so do not mix with migration review. |
 
 ## Frontend Migration
 
 | Task | Priority | Notes |
 | --- | --- | --- |
-| Find Next.js frontend repository and branch. | High | No frontend exists in this backend workspace. |
-| Search for `Nestar`, `nestar`, `nestars`, `nestar-api`, and old asset names. | High | Build exact change list. |
-| Update app metadata, layout, nav, footer, and auth branding to VMotors. | High | Visible user-facing identity first. |
-| Rename frontend components/files with Nestar identity. | Medium | Keep imports and route aliases stable during transition. |
-| Rename client-side GraphQL operation names only. | Medium | Do not change backend GraphQL field names yet. |
-| Review terminology shift from `Property` to listing/vehicle language. | Medium | Requires product decision before backend API rename. |
+| Treat `FRONTEND_MIGRATION.md` as historical and refresh it when a new planning pass is needed. | Medium | The current file still reflects an early planning phase before the live frontend repo and homepage redesign/polish work were completed. |
+| Decide the final status of `PopularProperties`. | High | The component still exists and queries data, but `pages/index.tsx` no longer renders it. Either remove the dead section cleanly or reintroduce it intentionally elsewhere. |
+| Add homepage smoke coverage. | High | Cover hero search, `New Arrivals`, `Buyer Favorites`, `Trusted Dealers`, video CTA, community links, and mobile/desktop responsive behavior. |
+| Accessibility audit for homepage interactions. | High | Prioritize brand cards, CTA buttons, autoplay video fallback/poster behavior, and reduced-motion parity between hero/search and section-level motion. |
+| Visual cleanup pass for leftover compatibility debt. | Medium | Audit reused real-estate asset fallbacks, old route/class naming leftovers, and any UI copy that still reads like a migration artifact instead of a final Santa surface. |
+| Consolidate repeated homepage motion/polish patterns if more sections adopt them. | Medium | `TrendProperties` and `TopProperties` currently own their own motion wrappers/variants; future work may justify extracting shared helpers after behavior stabilizes. |
 
-## Testing
+## Homepage Implementation Notes
 
-| Task | Priority | Command or check |
-| --- | --- | --- |
-| API typecheck | High | `npx tsc --noEmit -p apps/vmotors-api/tsconfig.app.json` |
-| Batch typecheck | High | `npx tsc --noEmit -p apps/vmotors-batch/tsconfig.app.json` |
-| API build | High | `npx nest build vmotors-api` |
-| Batch build | High | `npx nest build vmotors-batch` |
-| Identity scan | High | `rg -n --no-ignore --hidden --glob '!node_modules' --glob '!dist' --glob '!build' --glob '!coverage' --glob '!.git' -i "nestar" .` |
-| Lint cleanup validation | Medium | `npx eslint "{src,apps,libs,test}/**/*.ts"` |
-| Frontend build | Medium | Run in frontend repo after migration. |
+| Note | Why it matters |
+| --- | --- |
+| Current active home route order is `BrandSection` → `TrendProperties` → `TopProperties` → `TopAgents` → `Advertisement` → `TrustSection` → `CommunityBoards` → `CTASection`. | Older docs still mention a different section order that included `PopularProperties`. |
+| `TrendProperties` and `TopProperties` already use Framer Motion plus reduced-motion handling. | Additional homepage animation work should stay consistent with the current one-time viewport reveal pattern and avoid redundant animation systems. |
+| `TopAgents` already has a dedicated premium card treatment. | Future dealer-section work should preserve equal-height cards, fallback support copy, and the current desktop 4-up Swiper behavior. |
+| Shared homepage vehicle styling is centralized in `HomepageVehicleCard.tsx` and homepage SCSS. | Section-specific polish should stay scoped to avoid unintentionally changing other homepage or listing surfaces. |
 
-## Documentation
+## Validation Commands
 
-| Task | Priority | Notes |
-| --- | --- | --- |
-| Keep migration docs updated with validation results. | High | Especially e2e and deployment checks. |
-| Add frontend-specific file maps after frontend repo inspection. | High | Current frontend plan is inferred from backend modules. |
-| Document final environment policy. | Medium | Include database names and token rotation decision. |
-| Add release notes for operators. | Medium | Include new app IDs and dist paths. |
-
+| Task | Command |
+| --- | --- |
+| Frontend typecheck | `yarn -s tsc --noEmit --incremental false` |
+| Frontend production build | `yarn build` |
+| API typecheck | `npx tsc -p apps/vmotors-api/tsconfig.app.json --noEmit` |
+| Batch typecheck | `npx tsc -p apps/vmotors-batch/tsconfig.app.json --noEmit` |
+| Full build | `npm run build` |
+| Focused vehicle test | `npm test -- vehicle.service.spec.ts` |
+| Active source domain scan | `rg -n --no-ignore --hidden --glob '!node_modules' --glob '!dist' --glob '!build' --glob '!coverage' --glob '!.git' -i "property|properties|real estate|real-estate|petshop|petoria|used-car|second-hand|rental|auction" apps/vmotors-api/src apps/vmotors-batch/src` |

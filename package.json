@@ -1,7 +1,7 @@
 {
-	"name": "vmotors",
+	"name": "santa",
 	"version": "0.0.1",
-	"description": "",
+	"description": "Santa backend for the Hyundai and Kia new-car marketplace",
 	"author": "",
 	"private": true,
 	"license": "ITC",
@@ -11,7 +11,6 @@
 		"start": "nest start",
 		"start:dev": "nest start --watch",
 		"start:dev:batch": "nest start vmotors-batch --watch",
-		"train": "ts-node train.ts",
 		"start:debug": "nest start --debug --watch",
 		"start:prod": "NODE_ENV=production node dist/apps/vmotors-api/main",
 		"start:prod:batch": "node dist/apps/vmotors-batch/main",
@@ -46,6 +45,7 @@
 		"mongoose": "^8.0.0",
 		"reflect-metadata": "^0.1.13",
 		"rxjs": "^7.8.1",
+		"socket.io": "^4.8.3",
 		"uuid": "^13.0.0",
 		"ws": "^8.14.2"
 	},
@@ -56,6 +56,7 @@
 		"@types/express": "^4.17.17",
 		"@types/jest": "^29.5.2",
 		"@types/node": "^20.3.1",
+		"@types/socket.io": "^3.0.2",
 		"@types/supertest": "^2.0.12",
 		"@types/ws": "^8.5.10",
 		"@typescript-eslint/eslint-plugin": "^6.0.0",

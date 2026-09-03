@@ -1,11 +1,11 @@
 ---
 name: backend-migration
-description: Continue the VMotors backend migration from Nestar property concepts to VMotors new vehicle concepts while preserving the existing NestJS architecture.
+description: Continue the Santa backend migration from Nestar property concepts to Santa new vehicle concepts while preserving the existing NestJS architecture.
 ---
 
-# VMotors Backend Migration
+# Santa Backend Migration
 
-Use this skill when changing backend code for the VMotors vehicle migration.
+Use this skill when changing backend code for the Santa vehicle migration.
 
 ## Workflow
 

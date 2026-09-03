@@ -12,8 +12,9 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { MemberUpdate } from '../../libs/dto/member/member.update';
 import { getSerialForImage, shapeIntoMongoObjectId, validMimeTypes } from '../../libs/config';
 import { WithoutGuard } from '../auth/guards/without.guard';
-import { GraphQLUpload, FileUpload } from 'graphql-upload';
-import { createWriteStream } from 'fs';
+import { GraphQLUpload } from 'graphql-upload';
+import type { FileUpload } from 'graphql-upload';
+import { createWriteStream, unlink } from 'fs';
 import { Message } from '../../libs/enums/common.enum';
 
 @Resolver()
@@ -22,21 +23,17 @@ export class MemberResolver {
 
 	@Mutation(() => Member)
 	public async signup(@Args('input') input: MemberInput): Promise<Member> {
-		console.log('Mutation: signup');
 		return await this.memberService.signup(input);
 	}
 
 	@Mutation(() => Member)
 	public async login(@Args('input') input: LoginInput): Promise<Member> {
-		console.log('Mutation: login');
 		return await this.memberService.login(input);
 	}
 
 	@UseGuards(AuthGuard)
 	@Query(() => String)
 	public async checkAuth(@AuthMember('memberNick') memberNick: string): Promise<String> {
-		console.log('Query: checkAuth');
-		console.log('Authenticated memberNick:', memberNick);
 		return `Hi ${memberNick}`;
 	}
 
@@ -44,8 +41,6 @@ export class MemberResolver {
 	@UseGuards(RolesGuard)
 	@Query(() => String)
 	public async checkAuthRoles(@AuthMember() authMember: Member): Promise<String> {
-		console.log('Query: checkAuthRoles');
-		console.log('Authenticated memberNick:', authMember.memberNick);
 		return `Hi ${authMember.memberNick}, you are ${authMember.memberType}, (memberId: ${authMember._id})`;
 	}
 
@@ -55,16 +50,19 @@ export class MemberResolver {
 		@Args('input') input: MemberUpdate,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Member> {
-		console.log('Mutation: updateMember');
 		delete (input as any)._id;
 		return await this.memberService.updateMember(memberId, input);
 	}
 
 	@UseGuards(WithoutGuard)
 	@Query(() => Member)
+	public async getSupportContact(): Promise<Member> {
+		return await this.memberService.getSupportContact();
+	}
+
+	@UseGuards(WithoutGuard)
+	@Query(() => Member)
 	public async getMember(@Args('memberId') input: string, @AuthMember('_id') memberId: ObjectId): Promise<Member> {
-		console.log('Query: getMember');
-		console.log('Authenticated memberId:', memberId);
 		const targetId = shapeIntoMongoObjectId(input);
 		return await this.memberService.getMember(memberId, targetId);
 	}
@@ -72,7 +70,6 @@ export class MemberResolver {
 	@UseGuards(WithoutGuard)
 	@Query(() => Members)
 	public async getAgents(@Args('input') input: AgentsInquiry, @AuthMember('_id') memberId: ObjectId): Promise<Members> {
-		console.log('Query: getAgents');
 		return await this.memberService.getAgents(input, memberId);
 	}
 
@@ -82,7 +79,6 @@ export class MemberResolver {
 		@Args('memberId') input: string,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Member> {
-		console.log('Mutation: likeTargetMember');
 		const likeRefId = shapeIntoMongoObjectId(input);
 		return await this.memberService.likeTargetMember(memberId, likeRefId);
 	}
@@ -93,7 +89,6 @@ export class MemberResolver {
 	@UseGuards(RolesGuard)
 	@Query(() => Members)
 	public async getAllMembersByAdmin(@Args('input') input: MembersInquiry): Promise<Members> {
-		console.log('Query: getAllMembersByAdmin');
 		return await this.memberService.getAllMembersByAdmin(input);
 	}
 
@@ -101,7 +96,6 @@ export class MemberResolver {
 	@UseGuards(RolesGuard)
 	@Mutation(() => Member)
 	public async updateMemberByAdmin(@Args('input') input: MemberUpdate): Promise<Member> {
-		console.log('Mutation: updateMemberByAdmin');
 		return await this.memberService.updateMemberByAdmin(input);
 	}
 
@@ -112,8 +106,6 @@ export class MemberResolver {
 		{ createReadStream, filename, mimetype }: FileUpload,
 		@Args('target') target: String,
 	): Promise<string> {
-		console.log('Mutation: imageUploader');
-
 		if (!filename) throw new Error(Message.UPLOAD_FAILED);
 		const validMime = validMimeTypes.includes(mimetype);
 		if (!validMime) throw new Error(Message.PROVIDE_ALLOWED_FORMAT);
@@ -122,11 +114,18 @@ export class MemberResolver {
 		const url = `uploads/${target}/${imageName}`;
 		const stream = createReadStream();
 
-		const result = await new Promise((resolve, reject) => {
+		const result = await new Promise((resolve) => {
+			stream.on('error', () => {
+				unlink(url, () => {});
+				resolve(false);
+			});
 			stream
 				.pipe(createWriteStream(url))
 				.on('finish', async () => resolve(true))
-				.on('error', () => reject(false));
+				.on('error', () => {
+					unlink(url, () => {});
+					resolve(false);
+				});
 		});
 		if (!result) throw new Error(Message.UPLOAD_FAILED);
 
@@ -140,8 +139,6 @@ export class MemberResolver {
 		files: Promise<FileUpload>[],
 		@Args('target') target: String,
 	): Promise<string[]> {
-		console.log('Mutation: imagesUploader');
-
 		const uploadedImages: string[] = [];
 		const promisedList = files.map(async (img: Promise<FileUpload>, index: number): Promise<Promise<void>> => {
 			try {
@@ -154,11 +151,18 @@ export class MemberResolver {
 				const url = `uploads/${target}/${imageName}`;
 				const stream = createReadStream();
 
-				const result = await new Promise((resolve, reject) => {
+				const result = await new Promise((resolve) => {
+					stream.on('error', () => {
+						unlink(url, () => {});
+						resolve(false);
+					});
 					stream
 						.pipe(createWriteStream(url))
 						.on('finish', () => resolve(true))
-						.on('error', () => reject(false));
+						.on('error', () => {
+							unlink(url, () => {});
+							resolve(false);
+						});
 				});
 				if (!result) throw new Error(Message.UPLOAD_FAILED);
 

@@ -5,17 +5,18 @@ import { Model, ObjectId } from 'mongoose';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { T } from '../../libs/types/common';
 import { Message } from '../../libs/enums/common.enum';
-import { OrdinaryInquiry } from '../../libs/dto/property/property.input';
-import { Properties } from '../../libs/dto/property/property';
+import { OrdinaryInquiry } from '../../libs/dto/vehicle/vehicle.inquiry';
+import { Vehicles } from '../../libs/dto/vehicle/vehicles';
 import { LikeGroup } from '../../libs/enums/like.enum';
-import { lookupFavorite } from '../../libs/config';
+import { VehicleStatus } from '../../libs/enums/vehicle.enum';
+import { lookupFavoriteVehicle } from '../../libs/config';
 
 @Injectable()
 export class LikeService {
 	constructor(@InjectModel('Like') private readonly likeModel: Model<Like>) {}
 
 	public async toggleLike(input: LikeInput): Promise<number> {
-		const search: T = { memberId: input.memberId, likeRefId: input.likeRefId };
+		const search: T = { memberId: input.memberId, likeRefId: input.likeRefId, likeGroup: input.likeGroup };
 		const exist = await this.likeModel.findOne(search).exec();
 
 		let modifier: number;
@@ -32,20 +33,19 @@ export class LikeService {
 			}
 		}
 
-		console.log('Like toggled, modifier:', modifier);
 		return modifier;
 	}
 
 	public async checkLikeExistence(input: LikeInput): Promise<MeLiked[]> {
-		const { memberId, likeRefId } = input;
-		const result = await this.likeModel.findOne({ memberId, likeRefId }).exec();
+		const { memberId, likeRefId, likeGroup } = input;
+		const result = await this.likeModel.findOne({ memberId, likeRefId, likeGroup }).exec();
 
 		return result ? [{ memberId, likeRefId, myFavorite: true }] : [];
 	}
 
-	public async getFavoriteProperties(memberId: ObjectId, inquery: OrdinaryInquiry): Promise<Properties> {
+	public async getFavoriteVehicles(memberId: ObjectId, inquery: OrdinaryInquiry): Promise<Vehicles> {
 		const { page, limit } = inquery;
-		const match: T = { memberId, likeGroup: LikeGroup.PROPERTY };
+		const match: T = { memberId, likeGroup: LikeGroup.VEHICLE };
 
 		const data: T = await this.likeModel
 			.aggregate([
@@ -53,20 +53,26 @@ export class LikeService {
 				{ $sort: { updatedAt: -1 } },
 				{
 					$lookup: {
-						from: 'properties',
+						from: 'vehicles',
 						localField: 'likeRefId',
 						foreignField: '_id',
-						as: 'favoriteProperty',
+						as: 'favoriteVehicle',
 					},
 				},
-				{ $unwind: '$favoriteProperty' },
+				{ $unwind: '$favoriteVehicle' },
+				{
+					$match: {
+						'favoriteVehicle.deletedAt': { $exists: false },
+						'favoriteVehicle.vehicleStatus': VehicleStatus.AVAILABLE,
+					},
+				},
 				{
 					$facet: {
 						list: [
 							{ $skip: (page - 1) * limit },
 							{ $limit: limit },
-							lookupFavorite,
-							{ $unwind: '$favoriteProperty.memberData' },
+							lookupFavoriteVehicle,
+							{ $unwind: '$favoriteVehicle.memberData' },
 						],
 						metaCounter: [{ $count: 'total' }],
 					},
@@ -74,8 +80,8 @@ export class LikeService {
 			])
 			.exec();
 
-		const result: Properties = { list: [], metaCounter: data[0].metaCounter };
-		result.list = data[0].list.map((ele) => ele.favoriteProperty);
+		const result: Vehicles = { list: [], metaCounter: data[0].metaCounter };
+		result.list = data[0].list.map((ele) => ele.favoriteVehicle);
 		return result;
 	}
 }

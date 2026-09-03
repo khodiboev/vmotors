@@ -37,7 +37,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 	@WebSocketServer()
 	server!: Server;
 
-	public afterInit(server: Server) {
+	public afterInit(_server: Server) {
 		this.logger.verbose(`WebSocket Server Initialized & total [${this.summaryClient}]`);
 	}
 
@@ -46,7 +46,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 			const parsedUrl = url.parse(req.url, true);
 			const { token } = parsedUrl.query;
 			return await this.authService.verifyToken(token as string);
-		} catch (error) {
+		} catch {
 			return null as any;
 		}
 	}
@@ -92,13 +92,20 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 		const authMember = this.clientsAuthMap.get(_client);
 		const newMessage: MessagePayload = { event: 'message', text: payload, memberData: authMember };
 
-		const clientNick: string = authMember ? authMember.memberNick : 'Guest';
 		this.logger.verbose(`NEW MESSAGE: ${payload}`);
 
 		this.messagesList.push(newMessage);
 		if(this.messagesList.length > 5) this.messagesList.splice(0, this.messagesList.length - 5);
 
 		this.emitMessage(newMessage);
+	}
+
+	public sendNotification(receiverId: string, notification: any): void {
+		this.clientsAuthMap.forEach((member, client) => {
+			if (member && String(member._id) === receiverId && client.readyState === WebSocket.OPEN) {
+				client.send(JSON.stringify({ event: 'notification', data: notification }));
+			}
+		});
 	}
 
 	private broadcastMessage(sender: WebSocket, message: InfoPayload | MessagePayload) {

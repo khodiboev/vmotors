@@ -1,25 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Property } from '../../vmotors-api/src/libs/dto/property/property';
+import { Vehicle } from '../../vmotors-api/src/libs/dto/vehicle/vehicle';
 import { Member } from '../../vmotors-api/src/libs/dto/member/member';
-import { PropertyStatus } from '../../vmotors-api/src/libs/enums/property.enum';
+import { VehicleStatus } from '../../vmotors-api/src/libs/enums/vehicle.enum';
 import { MemberStatus, MemberType } from '../../vmotors-api/src/libs/enums/member.enum';
 
 @Injectable()
 export class BatchService {
 	constructor(
-		@InjectModel('Property') private readonly propertyModel: Model<Property>,
+		@InjectModel('Vehicle') private readonly vehicleModel: Model<Vehicle>,
 		@InjectModel('Member') private readonly memberModel: Model<Member>,
 	) {}
 
 	public async batchRollback(): Promise<void> {
-		await this.propertyModel
+		await this.vehicleModel
 			.updateMany(
 				{
-					propertyStatus: PropertyStatus.ACTIVE,
+					vehicleStatus: VehicleStatus.AVAILABLE,
+					deletedAt: { $exists: false },
 				},
-				{ propertyRank: 0 },
+				{ vehicleRank: 0 },
 			)
 			.exec();
 
@@ -34,18 +35,19 @@ export class BatchService {
 			.exec();
 	}
 
-	public async batchTopProperties(): Promise<void> {
-		const properties: Property[] = await this.propertyModel
+	public async batchTopVehicles(): Promise<void> {
+		const vehicles: Vehicle[] = await this.vehicleModel
 			.find({
-				propertyStatus: PropertyStatus.ACTIVE,
-				propertyRank: 0,
+				vehicleStatus: VehicleStatus.AVAILABLE,
+				vehicleRank: 0,
+				deletedAt: { $exists: false },
 			})
 			.exec();
 
-		const promisedList = properties.map(async (ele: Property) => {
-			const { _id, propertyLikes, propertyViews } = ele;
-			const rank = propertyLikes * 2 + propertyViews * 1;
-			return await this.propertyModel.findByIdAndUpdate(_id, { propertyRank: rank });
+		const promisedList = vehicles.map(async (ele: Vehicle) => {
+			const { _id, vehicleLikes, vehicleViews } = ele;
+			const rank = vehicleLikes * 2 + vehicleViews * 1;
+			return await this.vehicleModel.findByIdAndUpdate(_id, { vehicleRank: rank });
 		});
 		await Promise.all(promisedList);
 	}
@@ -60,14 +62,14 @@ export class BatchService {
 			.exec();
 
 		const promisedList = agents.map(async (ele: Member) => {
-			const { _id, memberProperties, memberLikes, memberArticles, memberViews } = ele;
-			const rank = memberProperties * 5 + memberArticles * 3 + memberLikes * 2 + memberViews * 1;
+			const { _id, memberVehicles, memberLikes, memberArticles, memberViews } = ele;
+			const rank = memberVehicles * 5 + memberArticles * 3 + memberLikes * 2 + memberViews * 1;
 			return await this.memberModel.findByIdAndUpdate(_id, { memberRank: rank });
 		});
 		await Promise.all(promisedList);
 	}
 
 	public getHello(): string {
-		return 'Hello VMotors Batch server!';
+		return 'Hello Santa Batch server!';
 	}
 }

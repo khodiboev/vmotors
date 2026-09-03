@@ -13,7 +13,7 @@ const LikeSchema = new Schema(
 			type: Schema.Types.ObjectId,
 			required: true,
 		},
-		
+
 		memberId: {
 			type: Schema.Types.ObjectId,
 			required: true,
@@ -23,6 +23,6 @@ const LikeSchema = new Schema(
 	{ timestamps: true, collection: 'likes' },
 );
 
-LikeSchema.index({ memberId: 1, likeRefId: 1 }, { unique: true });
+LikeSchema.index({ memberId: 1, likeGroup: 1, likeRefId: 1 }, { unique: true });
 
 export default LikeSchema;

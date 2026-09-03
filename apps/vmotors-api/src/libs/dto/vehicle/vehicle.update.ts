@@ -68,6 +68,17 @@ export class VehicleUpdate {
 	vehicleDesc?: string;
 
 	@IsOptional()
+	@Length(1, 100)
+	@Field(() => String, { nullable: true })
+	vehicleBodyType?: string;
+
+	@IsOptional()
+	@IsInt()
+	@Min(0)
+	@Field(() => Int, { nullable: true })
+	vehicleMileage?: number;
+
+	@IsOptional()
 	@Field(() => VehicleStatus, { nullable: true })
 	vehicleStatus?: VehicleStatus;
 

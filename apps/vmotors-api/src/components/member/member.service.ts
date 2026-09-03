@@ -3,19 +3,20 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { Member, Members } from '../../libs/dto/member/member';
 import { AgentsInquiry, LoginInput, MemberInput, MembersInquiry } from '../../libs/dto/member/member.input';
-import { MemberStatus } from '../../libs/enums/member.enum';
+import { MemberStatus, MemberType } from '../../libs/enums/member.enum';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { AuthService } from '../auth/auth.service';
 import { MemberUpdate } from '../../libs/dto/member/member.update';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { ViewService } from '../view/view.service';
-import { View } from '../../libs/dto/view/view';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { LikeGroup } from '../../libs/enums/like.enum';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeService } from '../like/like.service';
 import { Follower, Following, MeFollowed } from '../../libs/dto/follow/follow';
 import { lookupAuthMemberLiked } from '../../libs/config';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationGroup, NotificationType } from '../../libs/enums/notification.enum';
 
 @Injectable()
 export class MemberService {
@@ -25,9 +26,12 @@ export class MemberService {
 		private authService: AuthService,
 		private viewService: ViewService,
 		private likeService: LikeService,
+		private notificationService: NotificationService,
 	) {}
 
 	public async signup(input: MemberInput): Promise<Member> {
+		// Self-signup is USER-only; dealer (AGENT) status is granted later by an admin
+		input.memberType = MemberType.USER;
 		input.memberPassword = await this.authService.hashPassword(input.memberPassword);
 		try {
 			const result = await this.memberModel.create(input);
@@ -39,8 +43,7 @@ export class MemberService {
 	}
 
 	public async login(input: LoginInput): Promise<Member> {
-		const { memberNick, memberPassword } = input;
-		console.log('LoginInput:', input);
+		const { memberNick } = input;
 
 		const response: Member | null = await this.memberModel
 			.findOne({ memberNick: memberNick })
@@ -77,6 +80,16 @@ export class MemberService {
 		}
 		result.accessToken = await this.authService.createToken(result);
 		return result;
+	}
+
+	public async getSupportContact(): Promise<Member> {
+		const targetMember = await this.memberModel
+			.findOne({ memberType: MemberType.ADMIN, memberStatus: MemberStatus.ACTIVE })
+			.sort({ createdAt: 1 })
+			.lean()
+			.exec();
+		if (!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+		return targetMember;
 	}
 
 	public async getMember(memberId: ObjectId | null, targetId: ObjectId): Promise<Member> {
@@ -127,8 +140,10 @@ export class MemberService {
 
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
 
-		if (text) match.memberNick = { $regex: new RegExp(text, 'i') };
-		console.log('Match object for getAgents:', match);
+		if (text) {
+			const regex = { $regex: new RegExp(text, 'i') };
+			match.$or = [{ memberNick: regex }, { memberFullName: regex }, { memberAddress: regex }];
+		}
 
 		const result = await this.memberModel
 			.aggregate([
@@ -137,9 +152,9 @@ export class MemberService {
 				{
 					$facet: {
 						list: [
-							{ $skip: (input.page - 1) * input.limit }, 
-							{ $limit: input.limit }, 
-							lookupAuthMemberLiked(memberId) 
+							{ $skip: (input.page - 1) * input.limit },
+							{ $limit: input.limit },
+							lookupAuthMemberLiked(memberId)
 						],
 						metaCounter: [{ $count: 'total' }],
 					},
@@ -163,6 +178,16 @@ export class MemberService {
 		const modifier: number = await this.likeService.toggleLike(input);
 		const result = await this.memberStatsEditor({ _id: likeRefId, targetKey: 'memberLikes', modifier });
 
+		if (modifier === 1) {
+			await this.notificationService.createNotification({
+				notificationType: NotificationType.LIKE,
+				notificationGroup: NotificationGroup.MEMBER,
+				notificationTitle: 'liked your profile',
+				authorId: memberId,
+				receiverId: likeRefId,
+			});
+		}
+
 		if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
 		return result;
 	}
@@ -176,7 +201,6 @@ export class MemberService {
 		if (memberStatus) match.memberStatus = memberStatus;
 		if (memberType) match.memberType = memberType;
 		if (text) match.memberNick = { $regex: new RegExp(text, 'i') };
-		console.log('Match object for getAgents:', match);
 
 		const result = await this.memberModel
 			.aggregate([
@@ -210,7 +234,6 @@ export class MemberService {
 	}
 
 	public async memberStatsEditor(input: StatisticModifier): Promise<Member> {
-		console.log('executed');
 		const { _id, targetKey, modifier } = input;
 		const result = await this.memberModel
 			.findOneAndUpdate(
