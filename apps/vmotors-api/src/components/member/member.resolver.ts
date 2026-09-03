@@ -14,7 +14,7 @@ import { getSerialForImage, shapeIntoMongoObjectId, validMimeTypes } from '../..
 import { WithoutGuard } from '../auth/guards/without.guard';
 import { GraphQLUpload } from 'graphql-upload';
 import type { FileUpload } from 'graphql-upload';
-import { createWriteStream } from 'fs';
+import { createWriteStream, unlink } from 'fs';
 import { Message } from '../../libs/enums/common.enum';
 
 @Resolver()
@@ -114,11 +114,18 @@ export class MemberResolver {
 		const url = `uploads/${target}/${imageName}`;
 		const stream = createReadStream();
 
-		const result = await new Promise((resolve, reject) => {
+		const result = await new Promise((resolve) => {
+			stream.on('error', () => {
+				unlink(url, () => {});
+				resolve(false);
+			});
 			stream
 				.pipe(createWriteStream(url))
 				.on('finish', async () => resolve(true))
-				.on('error', () => reject(false));
+				.on('error', () => {
+					unlink(url, () => {});
+					resolve(false);
+				});
 		});
 		if (!result) throw new Error(Message.UPLOAD_FAILED);
 
@@ -144,11 +151,18 @@ export class MemberResolver {
 				const url = `uploads/${target}/${imageName}`;
 				const stream = createReadStream();
 
-				const result = await new Promise((resolve, reject) => {
+				const result = await new Promise((resolve) => {
+					stream.on('error', () => {
+						unlink(url, () => {});
+						resolve(false);
+					});
 					stream
 						.pipe(createWriteStream(url))
 						.on('finish', () => resolve(true))
-						.on('error', () => reject(false));
+						.on('error', () => {
+							unlink(url, () => {});
+							resolve(false);
+						});
 				});
 				if (!result) throw new Error(Message.UPLOAD_FAILED);
 

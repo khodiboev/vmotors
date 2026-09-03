@@ -46,7 +46,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 			const parsedUrl = url.parse(req.url, true);
 			const { token } = parsedUrl.query;
 			return await this.authService.verifyToken(token as string);
-		} catch (error) {
+		} catch {
 			return null as any;
 		}
 	}
